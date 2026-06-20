@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What are ideal materials for RAG with minimal loss?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital@1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+  :root {
+    --bg: #0E1A24;
+    --bg-panel: #122230;
+    --bg-panel-raised: #16293A;
+    --grid-line: rgba(232, 228, 220, 0.06);
+    --ink: #EDE8DC;
+    --ink-dim: #9CA8B0;
+    --ink-faint: #5C6B75;
+    --amber: #E8A33D;
+    --amber-dim: #8A6326;
+    --cyan: #5FB3B3;
+    --cyan-dim: #386E6E;
+    --coral: #D4775F;
+    --coral-dim: #7A4434;
+    --line: rgba(232, 228, 220, 0.14);
+    --line-strong: rgba(232, 228, 220, 0.28);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --serif: 'IBM Plex Serif', serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 32px 32px;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--amber-dim); color: var(--ink); }
+
+  a { color: var(--cyan); text-decoration: none; border-bottom: 1px solid var(--cyan-dim); }
+  a:hover { border-bottom-color: var(--cyan); }
+
+  code, .mono { font-family: var(--mono); }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2rem;
+    background: rgba(14, 26, 36, 0.92);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+  }
+  .topbar .doc-id { color: var(--amber); }
+  .topbar .progress-track {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    width: 100%;
+    background: transparent;
+  }
+  .topbar .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--amber);
+    transition: width 0.1s linear;
+  }
+
+  .shell {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 760px) 1fr;
+    gap: 0;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  .rail {
+    padding: 3rem 1.5rem 3rem 2rem;
+    position: sticky;
+    top: 56px;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+  }
+  .rail-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .rail-item {
+    display: block;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    padding: 0.4rem 0 0.4rem 0.7rem;
+    border-left: 2px solid var(--line);
+    margin-bottom: 0.15rem;
+    border-bottom: none;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .rail-item:hover { color: var(--ink); border-left-color: var(--ink-dim); }
+  .rail-item.active { color: var(--amber); border-left-color: var(--amber); }
+
+  main { padding: 3rem 2.5rem 6rem; min-width: 0; }
+  .margin-notes { padding: 3rem 1.5rem; }
+
+  .hero {
+    padding-bottom: 2.5rem;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--coral);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .hero h1 {
+    font-family: var(--mono);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 600;
+    line-height: 1.25;
+    margin: 0 0 1.25rem;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .hero-sub {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink-dim);
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .hero-mini-demo {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+  }
+  .hero-mini-demo .col { padding: 1rem 1.1rem; }
+  .hero-mini-demo .col.bad { border-right: 1px solid var(--line); }
+  .hero-mini-demo .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  .hero-mini-demo .col.bad .label { color: var(--coral); }
+  .hero-mini-demo .col.good .label { color: var(--cyan); }
+  .hero-mini-demo .sample {
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .hero-mini-demo .col.bad .sample { color: var(--coral); opacity: 0.85; }
+  .hero-mini-demo .col.good .sample { color: var(--ink); }
+  .hero-mini-demo .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.5rem;
+    color: var(--amber);
+    font-size: 18px;
+  }
+
+  .page-section {
+    margin-bottom: 3.5rem;
+    scroll-margin-top: 80px;
+  }
+  .page-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    border: 1px solid var(--amber-dim);
+    padding: 0.2rem 0.6rem;
+    margin-bottom: 1rem;
+  }
+  .page-section h2 {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.35;
+    margin: 0 0 1.25rem;
+    color: var(--ink);
+  }
+  .page-section h3 {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--amber);
+    margin: 2rem 0 0.9rem;
+  }
+  .page-section p { margin: 0 0 1.1rem; color: var(--ink); }
+  .page-section p.dim { color: var(--ink-dim); }
+
+  .callout {
+    border-left: 3px solid var(--amber);
+    background: var(--bg-panel);
+    padding: 0.9rem 1.1rem;
+    margin: 1.4rem 0;
+    font-size: 14.5px;
+  }
+  .callout.decision { border-left-color: var(--cyan); }
+  .callout.open { border-left-color: var(--coral); }
+  .callout .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-right: 0.5rem;
+  }
+  .callout.decision .tag { color: var(--cyan); }
+  .callout.open .tag { color: var(--coral); }
+  .callout p { margin: 0; display: inline; color: var(--ink-dim); }
+
+  pre {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 1.2rem 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  pre.bad-ocr { border-color: var(--coral-dim); color: var(--coral); background: rgba(212, 119, 95, 0.06); }
+  pre.good-out { border-color: var(--cyan-dim); color: var(--ink); background: rgba(95, 179, 179, 0.05); }
+
+  .formula-block {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    padding: 1.4rem 1.2rem;
+    margin: 1.2rem 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .formula-block .katex { font-size: 1.15em; color: var(--ink); }
+  .symbol-list {
+    font-size: 14px;
+    color: var(--ink-dim);
+    margin: 0.8rem 0 1.4rem;
+    padding-left: 1.1rem;
+  }
+  .symbol-list li { margin-bottom: 0.3rem; }
+  .symbol-list .katex { font-size: 1em; }
+
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    font-family: var(--mono);
+  }
+  caption {
+    caption-side: top;
+    text-align: left;
+    font-family: var(--sans);
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    margin-bottom: 0.6rem;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 0.5rem 0.7rem;
+    text-align: left;
+  }
+  th {
+    background: var(--bg-panel-raised);
+    color: var(--amber);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+  }
+  td { color: var(--ink-dim); }
+
+  .checklist-grid { display: flex; flex-direction: column; gap: 1.4rem; margin: 2rem 0 3rem; }
+
+  .compare-card {
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+  }
+  .compare-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    gap: 1rem;
+  }
+  .compare-head:hover { background: var(--bg-panel-raised); }
+  .compare-head-left { display: flex; align-items: baseline; gap: 0.8rem; min-width: 0; }
+  .compare-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    flex-shrink: 0;
+  }
+  .compare-title {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .compare-toggle {
+    flex-shrink: 0;
+    display: flex;
+    border: 1px solid var(--line-strong);
+    overflow: hidden;
+  }
+  .compare-toggle button {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--ink-faint);
+    padding: 0.4rem 0.85rem;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    transition: background 0.15s, color 0.15s;
+  }
+  .compare-toggle button.is-bad.is-active { background: var(--coral-dim); color: var(--ink); }
+  .compare-toggle button.is-good.is-active { background: var(--cyan-dim); color: var(--ink); }
+  .compare-toggle button:not(.is-active):hover { color: var(--ink-dim); }
+
+  .compare-body { padding: 1.2rem; display: none; }
+  .compare-body.is-open { display: block; }
+  .compare-body .state-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
+  }
+  .compare-body[data-state="bad"] .state-label { color: var(--coral); }
+  .compare-body[data-state="good"] .state-label { color: var(--cyan); }
+  .compare-body pre { margin: 0; }
+  .compare-body .note {
+    margin-top: 0.9rem;
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin: 1.4rem 0;
+  }
+  .stat-cell {
+    background: var(--bg-panel);
+    padding: 1rem 1.1rem;
+  }
+  .stat-cell .stat-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .stat-cell .stat-value {
+    font-family: var(--mono);
+    font-size: 19px;
+    color: var(--amber);
+    font-weight: 600;
+  }
+  .stat-cell .stat-context { font-size: 12px; color: var(--ink-dim); margin-top: 0.3rem; }
+
+  .resources {
+    margin-top: 3rem;
+    border-top: 1px solid var(--line);
+    padding-top: 2rem;
+  }
+  .resource-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .resource-card { background: var(--bg-panel); padding: 1.1rem 1.2rem; }
+  .resource-card .res-kind {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.5rem;
+  }
+  .resource-card a.res-title {
+    display: block;
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 14.5px;
+    color: var(--ink);
+    border-bottom: none;
+    margin-bottom: 0.4rem;
+  }
+  .resource-card a.res-title:hover { color: var(--amber); }
+  .resource-card p { font-size: 13px; color: var(--ink-dim); margin: 0; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 2rem 2.5rem 3rem;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 1000px) {
+    .shell { grid-template-columns: 1fr; }
+    .rail { display: none; }
+    .margin-notes { display: none; }
+    main { padding: 2rem 1.4rem 4rem; }
+  }
+  @media (max-width: 700px) {
+    .resource-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .hero-mini-demo { grid-template-columns: 1fr; }
+    .hero-mini-demo .arrow { display: none; }
+    .hero-mini-demo .col.bad { border-right: none; border-bottom: 1px solid var(--line); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span><span class="doc-id">DOC-RAG-001</span> &middot; minimal-loss conversion guide</span>
+  <span id="topbar-page">page 1 / 6</span>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<div class="shell">
+
+  <nav class="rail" aria-label="Page navigation">
+    <div class="rail-title">Contents</div>
+    <a class="rail-item" data-target="page-1" href="#page-1">01 &nbsp;The problem</a>
+    <a class="rail-item" data-target="page-2" href="#page-2">02 &nbsp;Target format</a>
+    <a class="rail-item" data-target="page-3" href="#page-3">03 &nbsp;Conversion method</a>
+    <a class="rail-item" data-target="page-4" href="#page-4">04 &nbsp;Hybrid pipeline</a>
+    <a class="rail-item" data-target="page-5" href="#page-5">05 &nbsp;Chunking strategy</a>
+    <a class="rail-item" data-target="page-6" href="#page-6">06 &nbsp;Worked examples</a>
+  </nav>
+
+  <main>
+
+    <div class="hero">
+      <div class="hero-eyebrow">field notes &middot; document conversion for RAG</div>
+      <h1>What are ideal materials for RAG with minimal loss?</h1>
+      <p class="hero-sub">A practical guide to producing documents &mdash; datasheets, scope manuals, engineering textbooks &mdash; that are simultaneously human-readable and loss-free once they enter a retrieval pipeline. Written from real conversions where standard OCR quietly destroyed the formulas, tables, and figures a RAG system actually needs.</p>
+
+      <div class="hero-mini-demo">
+        <div class="col bad">
+          <div class="label">raw OCR output</div>
+          <div class="sample">Lyie-via = 21 xhx n(B) pit (13-35)</div>
+        </div>
+        <div class="arrow">&#8594;</div>
+        <div class="col good">
+          <div class="label">RAG-ready markdown</div>
+          <div class="sample" id="hero-formula"></div>
+        </div>
+      </div>
+    </div>
+
+    <section class="page-section" id="page-1">
+      <div class="page-tag">page 01 / 06</div>
+      <h2>The problem: PDFs were never meant to be read by machines</h2>
+      <p>A PDF is a print format. It encodes where ink goes on a page &mdash; glyph shapes at X/Y coordinates, image blobs, vector line drawings &mdash; not the semantic structure of the content. A human reading a rendered PDF reconstructs that structure effortlessly: this is a table, this is a formula, this sentence continues from the previous line. A naive text-extraction pipeline does none of that reconstruction. It just reads glyphs in roughly the order they appear and concatenates them.</p>
+      <p>This mismatch is invisible for plain prose and catastrophic for anything structured. Three content types account for nearly all of the information loss in technical documents.</p>
+
+      <h3>Tables</h3>
+      <p class="dim">Lose column alignment entirely. A register map or an electrical-characteristics table becomes a flat stream of numbers with no indication of which value belongs to which symbol, row, or column.</p>
+
+      <h3>Formulas</h3>
+      <p class="dim">Get read as if they were regular words. Subscripts, superscripts, Greek letters, fraction bars, and operators all collapse into garbled character soup. A real example, from OCR run on a signal-integrity textbook page:</p>
+      <pre class="bad-ocr">Lyie-via = 21 xhx n(B) pit (13-35)</pre>
+      <p class="dim">What this was actually supposed to be:</p>
+      <div class="formula-block"><span id="formula-1335"></span></div>
+      <p class="dim">The OCR output isn't just imprecise &mdash; it's actively wrong in a way that would mislead both a human skimming the converted text and an embedding model trying to represent it semantically. This is worse than no extraction at all, because it carries false confidence.</p>
+
+      <h3>Images</h3>
+      <p class="dim">Get extracted as disconnected binary blobs, severed from the caption and paragraph that reference them (&ldquo;Figure 13-32 illustrates&hellip;&rdquo;). A page-by-page dump produces a pile of <code>img_001.png</code>, <code>img_002.png</code> files with no link back to where they belong in the narrative.</p>
+
+      <div class="callout decision">
+        <span class="tag">DECISION</span>
+        <p>The fix is not a better OCR engine &mdash; it's choosing the right target format first, then choosing a conversion method capable of hitting that target. Format and method are separate decisions, and getting the format right first clarifies what the method needs to achieve.</p>
+      </div>
+    </section>
+
+    <section class="page-section" id="page-2">
+      <div class="page-tag">page 02 / 06</div>
+      <h2>The target format: structure-preserving Markdown</h2>
+      <p>The format that satisfies both &ldquo;human-readable&rdquo; and &ldquo;RAG-ready&rdquo; simultaneously is structured Markdown with a few conventions layered on top. Plain Markdown alone isn't enough &mdash; the conventions matter as much as the base format.</p>
+
+      <h3>Why Markdown over alternatives</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Format</th><th>Human-readable</th><th>Machine-parseable</th><th>Renders formulas / tables</th></tr></thead>
+          <tbody>
+            <tr><td>Plain .txt</td><td>Yes</td><td>Poor</td><td>No</td></tr>
+            <tr><td>Raw OCR output</td><td>Barely</td><td>Poor</td><td>No</td></tr>
+            <tr><td>.docx</td><td>Yes</td><td>Moderate</td><td>Limited</td></tr>
+            <tr><td>.html</td><td>Yes (rendered)</td><td>Good</td><td>Yes (MathML/KaTeX)</td></tr>
+            <tr style="color: var(--cyan);"><td><strong>Markdown + LaTeX + JSON</strong></td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="dim">Markdown wins for this use case because it's the lowest-overhead format that still carries structure: headers signal section boundaries, table syntax preserves column alignment as text, and LaTeX delimiters are a widely-supported convention for embedding math as parseable text rather than as an unparseable image.</p>
+
+      <h3>1. Headers define chunk boundaries</h3>
+      <p class="dim">Use <code>##</code> for major sections and <code>###</code> for subsections, with each section written to be understandable in isolation. This directly addresses what Anthropic's research on contextual retrieval identified as the core failure mode of naive chunking: a fragment like &ldquo;the company's revenue grew by 3% over the previous quarter&rdquo; is useless on retrieval because it doesn't say which company or time period it refers to.</p>
+
+      <h3>2. Formulas as LaTeX, with symbol definitions attached</h3>
+      <div class="formula-block"><span id="formula-1335-b"></span></div>
+      <ul class="symbol-list">
+        <li><span id="sym-1"></span> &mdash; loop spreading inductance between vias, pH</li>
+        <li><span id="sym-2"></span> &mdash; dielectric thickness between vias, mils</li>
+        <li><span id="sym-3"></span> &mdash; distance between via centers, mils</li>
+        <li><span id="sym-4"></span> &mdash; via diameter, mils</li>
+      </ul>
+
+      <h3>3. Tables as real Markdown tables</h3>
+      <div class="table-wrap">
+        <table>
+          <caption>Table 24 &mdash; SPI AC characteristics</caption>
+          <thead><tr><th>Symbol</th><th>Parameter</th><th>Min</th><th>Typ</th><th>Max</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td><span id="sym-fsck"></span></td><td>SCK clock frequency, master mode</td><td>&mdash;</td><td>&mdash;</td><td>18</td><td>MHz</td></tr>
+            <tr><td><span id="sym-tsu"></span></td><td>MISO data setup time before SCK edge</td><td>5</td><td>&mdash;</td><td>&mdash;</td><td>ns</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>4. Images inline, with a manifest</h3>
+      <pre class="good-out">![Figure 13-38: Where should the capacitor go?](./images/fig_p660_a.png)
+*Figure 13-38 &mdash; Cross-section showing capacitor placement options.*
+
+&lt;!-- figure-ref: Figure 13-38 --&gt;</pre>
+      <p class="dim">The HTML comment carries machine-readable metadata invisibly &mdash; visible to a RAG indexer parsing the raw file, invisible to a human reading it rendered.</p>
+    </section>
+
+    <section class="page-section" id="page-3">
+      <div class="page-tag">page 03 / 06</div>
+      <h2>Conversion method: why vision-based transcription beats OCR</h2>
+      <p>Choosing the target format is the easy part. Actually producing it from a scanned or graphic-format PDF is where the real engineering decision sits.</p>
+
+      <h3>The OCR ceiling</h3>
+      <p class="dim">Classic OCR engines are trained on prose. They have no model of two-dimensional mathematical layout &mdash; subscripts, nested fractions, matrices, and nonstandard symbol sequences defeat a line-by-line text recognizer because it reads the visual shapes as if they were ordinary words read left to right. This isn't a tuning problem solvable with a higher DPI scan &mdash; it's an architectural mismatch.</p>
+
+      <h3>What actually works now</h3>
+      <p class="dim">A late-2025 benchmark comparing document parsers specifically on mathematical formula extraction found state-of-the-art vision-language models and specialized document-OCR systems scoring above 9.6 out of 10, while traditional rule-based parsers performed considerably weaker.</p>
+
+      <div class="table-wrap">
+        <table>
+          <caption>Conversion method comparison for technical PDF content</caption>
+          <thead><tr><th>Method</th><th>Formulas</th><th>Tables</th><th>Typical cost</th></tr></thead>
+          <tbody>
+            <tr><td>Tesseract / classic OCR</td><td style="color: var(--coral);">Poor</td><td style="color: var(--coral);">Poor</td><td>Free, fast</td></tr>
+            <tr><td>pdfplumber / camelot</td><td>N/A</td><td style="color: var(--cyan);">Good</td><td>Free, fast (born-digital only)</td></tr>
+            <tr><td>Mathpix (math OCR)</td><td style="color: var(--cyan);">Very good</td><td style="color: var(--cyan);">Good</td><td>~$0.002&ndash;0.005 / page</td></tr>
+            <tr><td>Vision-capable LLM</td><td style="color: var(--cyan);">Very good</td><td style="color: var(--cyan);">Very good</td><td>~2,000&ndash;2,300 tok / page</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="dim">For mixed engineering documents &mdash; datasheets and SI/PI textbooks with prose, formulas, tables, register maps, and figures interleaved on the same pages &mdash; a general vision-capable LLM can read the whole page in context and decide how to format each piece relative to the surrounding narrative, rather than extracting fragments that still need manual reassembly.</p>
+
+      <div class="callout open">
+        <span class="tag">OPEN</span>
+        <p>The right choice between &ldquo;specialized tool + manual reassembly&rdquo; and &ldquo;general vision LLM doing everything in one pass&rdquo; comes down to formula/table density and budget &mdash; worth piloting both on a 10&ndash;20 page sample before committing to one path for an 800-page document.</p>
+      </div>
+    </section>
+
+    <section class="page-section" id="page-4">
+      <div class="page-tag">page 04 / 06</div>
+      <h2>Practical pipeline: hybrid routing to control cost</h2>
+      <p>Running every page through a vision-capable LLM is accurate but not always necessary. Most technical books are not uniformly dense &mdash; formulas and tables cluster in specific sections, while long stretches remain plain prose that classic OCR handles perfectly well.</p>
+
+      <h3>The hybrid routing pattern</h3>
+      <pre class="good-out">1. Diagnostic pass        pdfinfo / pdffonts / sample pdftotext
+2. Page classification    cheap, local heuristics, no API calls
+                           -&gt; route: "prose" | "vision" | "figure_only"
+3. Routed extraction      prose -&gt; Tesseract (cleaned)
+                           vision -&gt; LLM, RAG-ready contract enforced
+4. Assembly                ebook.md + images/ + manifest.json</pre>
+
+      <div class="callout decision">
+        <span class="tag">DECISION</span>
+        <p>Classify before transcribing, not during. The cheap classification pass shows the full cost estimate before spending anything, and lets you spot-check or override borderline pages.</p>
+      </div>
+
+      <h3>Cost estimation, concretely</h3>
+      <div class="stat-row">
+        <div class="stat-cell">
+          <div class="stat-label">21 pages</div>
+          <div class="stat-value">~46K tok</div>
+          <div class="stat-context">fits in one chat</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">100 pages</div>
+          <div class="stat-value">~220K tok</div>
+          <div class="stat-context">batches or short script</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">800 pages, all-vision</div>
+          <div class="stat-value">~1.8M tok</div>
+          <div class="stat-context">needs an API script</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">800 pages, hybrid</div>
+          <div class="stat-value">~500&ndash;700K tok</div>
+          <div class="stat-context">realistic for most textbooks</div>
+        </div>
+      </div>
+      <p class="dim">The hybrid split is usually where the real savings live &mdash; a textbook with formulas concentrated in specific chapters rather than spread evenly can cut total vision-route cost by more than half compared to routing every page indiscriminately.</p>
+    </section>
+
+    <section class="page-section" id="page-5">
+      <div class="page-tag">page 05 / 06</div>
+      <h2>Choosing chunk size and structure for retrieval</h2>
+      <p>Getting the source document into clean structured Markdown solves extraction. How that document gets split into retrievable chunks once indexed has its own practical defaults.</p>
+
+      <h3>Chunk size</h3>
+      <p class="dim">Current practitioner guidance converges on a range that depends on query type: 512&ndash;1024 tokens for analytical queries requiring multi-concept reasoning, 128&ndash;256 tokens for factoid lookups like dates or names, with recursive chunking at 512 tokens and 15&ndash;20% overlap as a reasonable starting baseline.</p>
+
+      <h3>Overlap: less settled than it used to be</h3>
+      <p class="dim">A January 2026 systematic analysis using SPLADE retrieval and Mistral-8B on Natural Questions found that overlap provided no measurable benefit and only increased indexing cost. Treat overlap as something to test against your own corpus rather than assume as a default &mdash; especially for documents already chunked along natural structural boundaries.</p>
+
+      <h3>Practical defaults to start with</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Parameter</th><th>Starting point</th></tr></thead>
+          <tbody>
+            <tr><td>Chunk boundary</td><td>Structural (page / section headers)</td></tr>
+            <tr><td>Chunk size</td><td>256&ndash;512 tok factoid, 512&ndash;1024 tok analytical</td></tr>
+            <tr><td>Overlap</td><td>Start at 0&ndash;10%, increase only if observed loss</td></tr>
+            <tr><td>Tables / registers</td><td>Keep whole, never split mid-table</td></tr>
+            <tr><td>Formulas</td><td>Keep formula + definitions as one atomic unit</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="page-section" id="page-6">
+      <div class="page-tag">page 06 / 06</div>
+      <h2>The minimal-loss checklist &mdash; toggle each item to compare</h2>
+      <p class="dim">Five checks, in rough order of impact. Click any card below to expand it, then flip between OCR output and RAG-ready to see the same content rendered both ways.</p>
+
+      <div class="checklist-grid" id="checklist-grid"></div>
+
+      <p class="dim" style="margin-top: 2rem;">The underlying principle across all five: minimal RAG loss comes from preserving semantic structure, not from any particular file format. Markdown with LaTeX and JSON sidecars is simply the most convenient container for carrying that structure &mdash; what matters is that tables stay tabular, formulas stay mathematical, images stay linked to their context, and paragraphs stay readable as paragraphs, all the way from the original PDF page through to the chunk a retriever hands back to the LLM.</p>
+    </section>
+
+    <div class="resources">
+      <h3 style="font-family: var(--mono); color: var(--ink); font-size: 15px; margin-bottom: 1.2rem;">Further reading</h3>
+      <div class="resource-grid">
+        <div class="resource-card">
+          <div class="res-kind">Anthropic &middot; research</div>
+          <a class="res-title" href="https://www.anthropic.com/news/contextual-retrieval" target="_blank" rel="noopener">Introducing Contextual Retrieval</a>
+          <p>The chunk-isolation problem and a 35% retrieval accuracy improvement from prepending context before embedding.</p>
+        </div>
+        <div class="resource-card">
+          <div class="res-kind">Anthropic &middot; cookbook</div>
+          <a class="res-title" href="https://github.com/anthropics/anthropic-cookbook/blob/main/skills/contextual-embeddings/guide.ipynb" target="_blank" rel="noopener">Contextual embeddings implementation guide</a>
+          <p>Working notebook for the contextual retrieval technique referenced on page 2.</p>
+        </div>
+        <div class="resource-card">
+          <div class="res-kind">tool &middot; math OCR</div>
+          <a class="res-title" href="https://docs.mathpix.com/" target="_blank" rel="noopener">Mathpix API documentation</a>
+          <p>Specialized math/table OCR; Convert API priced from roughly $0.002 per page as of 2026.</p>
+        </div>
+        <div class="resource-card">
+          <div class="res-kind">library &middot; PDF reading</div>
+          <a class="res-title" href="https://pymupdf.readthedocs.io/" target="_blank" rel="noopener">PyMuPDF documentation</a>
+          <p>The library used in the pipeline scripts for page rasterization and embedded image extraction.</p>
+        </div>
+        <div class="resource-card">
+          <div class="res-kind">guide &middot; chunking</div>
+          <a class="res-title" href="https://atlan.com/know/chunking-strategies-rag/" target="_blank" rel="noopener">Chunking strategies for RAG: methods and trade-offs</a>
+          <p>Survey of nine chunking approaches including hierarchical chunking, referenced on page 5.</p>
+        </div>
+        <div class="resource-card">
+          <div class="res-kind">tool &middot; OCR engine</div>
+          <a class="res-title" href="https://tesseract-ocr.github.io/" target="_blank" rel="noopener">Tesseract OCR documentation</a>
+          <p>The classic OCR engine discussed throughout &mdash; reliable for prose, unreliable for math and tables.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <aside class="margin-notes" aria-hidden="true"></aside>
+
+</div>
+
+<footer>
+  <span>DOC-RAG-001 &middot; minimal-loss conversion guide</span>
+  <span>format: structured markdown &middot; rev. 2026-06-20</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+(function () {
+  function r(id, tex, displayMode) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    try {
+      katex.render(tex, el, { displayMode: !!displayMode, throwOnError: false });
+    } catch (e) { el.textContent = tex; }
+  }
+
+  r('hero-formula', 'L_{via\\text{-}via} = 2h\\ln\\!\\left(\\frac{B}{D}\\right)\\ \\text{[pH]}', false);
+  r('formula-1335', 'L_{via\\text{-}via} = 2 \\times h \\times \\ln\\!\\left(\\frac{B}{D}\\right) \\quad \\text{[pH]} \\tag{13-35}', true);
+  r('formula-1335-b', 'L_{via\\text{-}via} = 2 \\times h \\times \\ln\\!\\left(\\frac{B}{D}\\right) \\quad \\text{[pH]} \\tag{13-35}', true);
+  r('sym-1', 'L_{via\\text{-}via}', false);
+  r('sym-2', 'h', false);
+  r('sym-3', 'B', false);
+  r('sym-4', 'D', false);
+  r('sym-fsck', 'f_{SCK}', false);
+  r('sym-tsu', 't_{su(MI)}', false);
+
+  var sections = Array.prototype.slice.call(document.querySelectorAll('.page-section'));
+  var railItems = Array.prototype.slice.call(document.querySelectorAll('.rail-item'));
+  var progressFill = document.getElementById('progress-fill');
+  var topbarPage = document.getElementById('topbar-page');
+
+  function onScroll() {
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY || doc.scrollTop;
+    var height = doc.scrollHeight - doc.clientHeight;
+    var pct = height > 0 ? (scrollTop / height) * 100 : 0;
+    progressFill.style.width = pct.toFixed(1) + '%';
+
+    var current = sections[0];
+    var currentIdx = 0;
+    for (var i = 0; i < sections.length; i++) {
+      var rect = sections[i].getBoundingClientRect();
+      if (rect.top < 140) { current = sections[i]; currentIdx = i; }
+    }
+    railItems.forEach(function (item) {
+      item.classList.toggle('active', item.dataset.target === current.id);
+    });
+    topbarPage.textContent = 'page ' + (currentIdx + 1) + ' / ' + sections.length;
+  }
+  document.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  var items = [
+    {
+      title: 'Are formulas LaTeX, not OCR\u2019d math?',
+      badLabel: 'OCR output',
+      goodLabel: 'RAG-ready',
+      badType: 'pre',
+      badContent: 'Lyie-via = 21 xhx n(B) pit (13-35)\n\nFor example, if the via diameters are 10 mils\nand they are spaced 1 inch apart, in a pair of\nplanes with h = 10 mils, the spreading\ninductance is approximately:\n\nLyie-via = 2 10 In(1000/10) = 967 pH = 1nH (13-36)',
+      goodType: 'formula',
+      goodTex: [
+        'L_{via\\text{-}via} = 2 \\times h \\times \\ln\\!\\left(\\frac{B}{D}\\right) \\ \\text{[pH]} \\tag{13-35}',
+        'L_{via\\text{-}via} = 2 \\times 10 \\times \\ln\\!\\left(\\frac{1000}{10}\\right) \\approx 967\\ \\text{pH} \\approx 1\\ \\text{nH} \\tag{13-36}'
+      ],
+      goodSymbols: ['L_{via\\text{-}via} \\text{ \u2014 loop spreading inductance, pH}', 'h \\text{ \u2014 dielectric thickness, mils}', 'B \\text{ \u2014 via center spacing, mils}', 'D \\text{ \u2014 via diameter, mils}'],
+      note: 'Renders correctly, embeds meaningfully, and a human can verify it against the original page at a glance \u2014 the OCR version is wrong in a way that asserts false confidence.'
+    },
+    {
+      title: 'Are tables still tables?',
+      badLabel: 'OCR output',
+      goodLabel: 'RAG-ready',
+      badType: 'pre',
+      badContent: 'fSCK SCK clock frequency master mode 18 MHz CL 30 pF\ntr tf SCK rise fall time 8 ns CL 30 pF\ntsu MI MISO data setup time before SCK edge 5 ns\nth MI MISO data hold time after SCK edge 4 ns',
+      goodType: 'table',
+      goodHeaders: ['Symbol', 'Parameter', 'Min', 'Typ', 'Max', 'Unit'],
+      goodRows: [
+        ['f_{SCK}', 'SCK clock frequency, master mode', '\u2014', '\u2014', '18', 'MHz'],
+        ['t_r, t_f', 'SCK rise / fall time', '\u2014', '\u2014', '8', 'ns'],
+        ['t_{su(MI)}', 'MISO data setup time before SCK edge', '5', '\u2014', '\u2014', 'ns']
+      ],
+      note: 'A single retrieved row now answers a query completely and correctly \u2014 symbol, value, and unit stay attached to each other instead of floating free.'
+    },
+    {
+      title: 'Are images linked to their reference point, with a manifest?',
+      badLabel: 'OCR output',
+      goodLabel: 'RAG-ready',
+      badType: 'pre',
+      badContent: '## Page 12\n\ntop surface capacitor has a much higher loop\ninductance... Figure 13-39 summarizes three cases.\n\n![Image](./images/img_012_a.png)\n![Image](./images/img_012_b.png)',
+      goodType: 'pre',
+      goodContent: '## Page 12 {#page-12}\n\nThe top surface capacitor has a much higher loop\ninductance than the bottom surface capacitor.\n\n![Figure 13-38: capacitor placement](./images/fig_p012_a.png)\n*Figure 13-38 \u2014 Cross-section of placement options.*\n\n<!-- figure-ref: Figure 13-38 -->\n\nFigure 13-39 summarizes three such cases...\n\n{\n  "fig_p012_a.png": {\n    "page": 12, "figure_number": "13-38",\n    "path": "images/fig_p012_a.png"\n  }\n}',
+      note: 'A RAG answer that says "see Figure 13-38" can be resolved programmatically: look up the figure number in the manifest, get the file path, serve it from your webserver.'
+    },
+    {
+      title: 'Is prose reconstructed into real sentences?',
+      badLabel: 'OCR output',
+      goodLabel: 'RAG-ready',
+      badType: 'pre',
+      badContent: 'At the end of a transmission line with a capac-\nitive load, the voltage appears to charge up\nwith an RC behavior. The C is the capac-\nitance of the load. The R is the char-\nacteristic impedance of the transmission\nline, Z0.',
+      goodType: 'pre',
+      goodContent: 'At the end of a transmission line with a\ncapacitive load, the voltage appears to charge\nup with an RC behavior. The capacitance C is\nthe capacitance of the load, and the resistance\nR is the characteristic impedance of the\ntransmission line, Z0.',
+      note: 'Hyphenation rejoined, line-wrap fragments merged into real sentences \u2014 a similarity search against whole words performs far better than one against broken word-halves.'
+    },
+    {
+      title: 'Does each chunk make sense read in isolation?',
+      badLabel: 'context-dependent',
+      goodLabel: 'self-contained',
+      badType: 'pre',
+      badContent: '## Page 47\n\nAs mentioned above, the same encoding applies\nhere. The values are 0x1 for the first case\nand 0x4 for the reset state. This is also\ntrue for the other register.',
+      goodType: 'pre',
+      goodContent: '## Page 47 \u2014 GPIO Configuration Register {#page-47}\n\nEach GPIO pin\'s mode/speed are configured via\n`GPIOx_CRL` (pins 0\u20137). Each pin occupies a\n4-bit field: 2 bits MODE, 2 bits CNF.\n\n`MODE0[1:0]` resets to 0x0 (input mode).\n`CNF0[1:0]` resets to 0x1 (floating input),\nper Table 12.',
+      note: 'Retrieved alone, the left version is meaningless \u2014 which encoding, which register? The right version names the register and states what the values mean, with no dependency on another chunk.'
+    }
+  ];
+
+  var grid = document.getElementById('checklist-grid');
+
+  function buildBody(type, data) {
+    if (type === 'pre') {
+      var pre = document.createElement('pre');
+      pre.style.margin = '0';
+      pre.textContent = data;
+      return pre;
+    }
+    if (type === 'formula') {
+      var wrap = document.createElement('div');
+      data.forEach(function (tex) {
+        var fb = document.createElement('div');
+        fb.className = 'formula-block';
+        fb.style.marginTop = '0';
+        try { katex.render(tex, fb, { displayMode: true, throwOnError: false }); }
+        catch (e) { fb.textContent = tex; }
+        wrap.appendChild(fb);
+      });
+      return wrap;
+    }
+    if (type === 'table') {
+      var twrap = document.createElement('div');
+      twrap.className = 'table-wrap';
+      twrap.style.margin = '0';
+      var table = document.createElement('table');
+      var thead = document.createElement('thead');
+      var htr = document.createElement('tr');
+      data.headers.forEach(function (h) {
+        var th = document.createElement('th');
+        th.textContent = h;
+        htr.appendChild(th);
+      });
+      thead.appendChild(htr);
+      table.appendChild(thead);
+      var tbody = document.createElement('tbody');
+      data.rows.forEach(function (row) {
+        var tr = document.createElement('tr');
+        row.forEach(function (cell, ci) {
+          var td = document.createElement('td');
+          if (ci === 0) {
+            try { katex.render(cell, td, { displayMode: false, throwOnError: false }); }
+            catch (e) { td.textContent = cell; }
+          } else {
+            td.textContent = cell;
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      twrap.appendChild(table);
+      return twrap;
+    }
+  }
+
+  items.forEach(function (item, idx) {
+    var card = document.createElement('div');
+    card.className = 'compare-card';
+
+    var head = document.createElement('div');
+    head.className = 'compare-head';
+    var numStr = (idx + 1) < 10 ? '0' + (idx + 1) : String(idx + 1);
+    head.innerHTML =
+      '<div class="compare-head-left">' +
+        '<span class="compare-num">' + numStr + '</span>' +
+        '<span class="compare-title">' + item.title + '</span>' +
+      '</div>' +
+      '<div class="compare-toggle">' +
+        '<button type="button" class="is-bad" data-state="bad">' + item.badLabel + '</button>' +
+        '<button type="button" class="is-good" data-state="good">' + item.goodLabel + '</button>' +
+      '</div>';
+
+    var body = document.createElement('div');
+    body.className = 'compare-body';
+
+    var stateLabel = document.createElement('div');
+    stateLabel.className = 'state-label';
+    body.appendChild(stateLabel);
+
+    var contentHolder = document.createElement('div');
+    body.appendChild(contentHolder);
+
+    var note = document.createElement('div');
+    note.className = 'note';
+    note.textContent = item.note;
+
+    var currentState = null;
+    var cardOpen = false;
+
+    function renderState(state) {
+      currentState = state;
+      contentHolder.innerHTML = '';
+      stateLabel.textContent = (state === 'bad' ? '\u2715 ' : '\u2713 ') + (state === 'bad' ? item.badLabel : item.goodLabel);
+      body.setAttribute('data-state', state);
+
+      var node;
+      if (state === 'bad') {
+        node = buildBody(item.badType, item.badContent);
+        if (item.badType === 'pre') node.className = 'bad-ocr';
+      } else {
+        if (item.goodType === 'formula') {
+          node = buildBody('formula', item.goodTex);
+          contentHolder.appendChild(node);
+          if (item.goodSymbols) {
+            var ul = document.createElement('ul');
+            ul.className = 'symbol-list';
+            ul.style.marginTop = '0.8rem';
+            item.goodSymbols.forEach(function (sym) {
+              var li = document.createElement('li');
+              katex.render(sym, li, { displayMode: false, throwOnError: false });
+              ul.appendChild(li);
+            });
+            contentHolder.appendChild(ul);
+          }
+          contentHolder.appendChild(note);
+          head.querySelectorAll('.compare-toggle button').forEach(function (btn) {
+            btn.classList.toggle('is-active', btn.dataset.state === state);
+          });
+          return;
+        } else if (item.goodType === 'table') {
+          node = buildBody('table', { headers: item.goodHeaders, rows: item.goodRows });
+        } else {
+          node = buildBody(item.goodType, item.goodContent);
+          if (item.goodType === 'pre') node.className = 'good-out';
+        }
+      }
+
+      contentHolder.appendChild(node);
+      contentHolder.appendChild(note);
+
+      head.querySelectorAll('.compare-toggle button').forEach(function (btn) {
+        btn.classList.toggle('is-active', btn.dataset.state === state);
+      });
+    }
+
+    head.addEventListener('click', function (e) {
+      var btn = e.target.closest('button');
+      if (btn) {
+        e.stopPropagation();
+        if (!cardOpen) { cardOpen = true; body.classList.add('is-open'); }
+        renderState(btn.dataset.state);
+        return;
+      }
+      cardOpen = !cardOpen;
+      body.classList.toggle('is-open', cardOpen);
+      if (cardOpen && currentState === null) renderState('bad');
+    });
+
+    card.appendChild(head);
+    card.appendChild(body);
+    grid.appendChild(card);
+
+    if (idx === 0) {
+      cardOpen = true;
+      body.classList.add('is-open');
+      renderState('bad');
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
