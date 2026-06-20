@@ -472,7 +472,7 @@
 
 <div class="topbar">
   <span><span class="doc-id">DOC-RAG-001</span> &middot; minimal-loss conversion guide</span>
-  <span id="topbar-page">page 1 / 6</span>
+  <span id="topbar-page">page 1 / 7</span>
   <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
 </div>
 
@@ -485,7 +485,8 @@
     <a class="rail-item" data-target="page-3" href="#page-3">03 &nbsp;Conversion method</a>
     <a class="rail-item" data-target="page-4" href="#page-4">04 &nbsp;Hybrid pipeline</a>
     <a class="rail-item" data-target="page-5" href="#page-5">05 &nbsp;Chunking strategy</a>
-    <a class="rail-item" data-target="page-6" href="#page-6">06 &nbsp;Worked examples</a>
+    <a class="rail-item" data-target="page-6" href="#page-6">06 &nbsp;JSON companion</a>
+    <a class="rail-item" data-target="page-7" href="#page-7">07 &nbsp;Worked examples</a>
   </nav>
 
   <main>
@@ -509,7 +510,7 @@
     </div>
 
     <section class="page-section" id="page-1">
-      <div class="page-tag">page 01 / 06</div>
+      <div class="page-tag">page 01 / 07</div>
       <h2>The problem: PDFs were never meant to be read by machines</h2>
       <p>A PDF is a print format. It encodes where ink goes on a page &mdash; glyph shapes at X/Y coordinates, image blobs, vector line drawings &mdash; not the semantic structure of the content. A human reading a rendered PDF reconstructs that structure effortlessly: this is a table, this is a formula, this sentence continues from the previous line. A naive text-extraction pipeline does none of that reconstruction. It just reads glyphs in roughly the order they appear and concatenates them.</p>
       <p>This mismatch is invisible for plain prose and catastrophic for anything structured. Three content types account for nearly all of the information loss in technical documents.</p>
@@ -534,7 +535,7 @@
     </section>
 
     <section class="page-section" id="page-2">
-      <div class="page-tag">page 02 / 06</div>
+      <div class="page-tag">page 02 / 07</div>
       <h2>The target format: structure-preserving Markdown</h2>
       <p>The format that satisfies both &ldquo;human-readable&rdquo; and &ldquo;RAG-ready&rdquo; simultaneously is structured Markdown with a few conventions layered on top. Plain Markdown alone isn't enough &mdash; the conventions matter as much as the base format.</p>
 
@@ -586,7 +587,7 @@
     </section>
 
     <section class="page-section" id="page-3">
-      <div class="page-tag">page 03 / 06</div>
+      <div class="page-tag">page 03 / 07</div>
       <h2>Conversion method: why vision-based transcription beats OCR</h2>
       <p>Choosing the target format is the easy part. Actually producing it from a scanned or graphic-format PDF is where the real engineering decision sits.</p>
 
@@ -618,7 +619,7 @@
     </section>
 
     <section class="page-section" id="page-4">
-      <div class="page-tag">page 04 / 06</div>
+      <div class="page-tag">page 04 / 07</div>
       <h2>Practical pipeline: hybrid routing to control cost</h2>
       <p>Running every page through a vision-capable LLM is accurate but not always necessary. Most technical books are not uniformly dense &mdash; formulas and tables cluster in specific sections, while long stretches remain plain prose that classic OCR handles perfectly well.</p>
 
@@ -662,7 +663,7 @@
     </section>
 
     <section class="page-section" id="page-5">
-      <div class="page-tag">page 05 / 06</div>
+      <div class="page-tag">page 05 / 07</div>
       <h2>Choosing chunk size and structure for retrieval</h2>
       <p>Getting the source document into clean structured Markdown solves extraction. How that document gets split into retrievable chunks once indexed has its own practical defaults.</p>
 
@@ -688,7 +689,71 @@
     </section>
 
     <section class="page-section" id="page-6">
-      <div class="page-tag">page 06 / 06</div>
+      <div class="page-tag">page 06 / 07</div>
+      <h2>JSON: when it's the better format</h2>
+      <p>Everything so far has argued for Markdown as the primary container. That's correct for prose, formulas-with-derivation, and anything a human reads as a sentence. But some content inside a technical document isn't prose at all &mdash; it's lookup data, and forcing it into Markdown, even a well-formed table, leaves retrieval worse off than treating it as what it actually is: structured key-value data.</p>
+
+      <h3>The general rule</h3>
+      <p class="dim">JSON earns its place wherever a query is really a lookup against a known key, not a fuzzy semantic match. Markdown/prose stays better wherever a query needs explanation, reasoning, or context. Most real documents need both side by side, not one replacing the other.</p>
+
+      <h3>Register bit-fields &mdash; the clearest case</h3>
+      <p class="dim">This isn't a new idea &mdash; the embedded systems world already solved it. ARM's <strong style="color: var(--ink);">CMSIS-SVD</strong> format formally describes every peripheral, register, and bit-field on a Cortex-M device as structured data: register name, address offset, reset value, access type, and every bit-field's enumerated meaning down to individual bit purpose. Debuggers, code generators, and tools like <code>svd2rust</code> consume it directly, because register data is inherently structured, not narrative.</p>
+
+      <pre class="good-out">{
+  "register": "TIM2_CR1",
+  "address_offset": "0x00",
+  "reset_value": "0x0000",
+  "fields": [
+    {
+      "name": "CMS",
+      "bits": "6:5",
+      "access": "read-write",
+      "reset": "0x0",
+      "description": "Center-aligned mode selection.",
+      "enumerated_values": {
+        "00": "Edge-aligned mode, direction set by DIR",
+        "01": "Center-aligned mode 1, flags set counting down",
+        "10": "Center-aligned mode 2, flags set counting up",
+        "11": "Center-aligned mode 3, flags set both directions"
+      }
+    }
+  ]
+}</pre>
+      <p class="dim">A query like &ldquo;what does CMS=01 mean on TIM2_CR1&rdquo; resolves as one exact field lookup. The same data flattened into a Markdown table and embedded has no concept of &ldquo;look up row where field=CMS and value=01&rdquo; &mdash; it can only return text semantically close to the query wording, which risks surfacing the wrong row entirely. Exact-match data wants exact-match retrieval, not vector similarity.</p>
+
+      <h3>Three more places JSON earns its place</h3>
+
+      <div class="stat-row" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="stat-cell">
+          <div class="stat-label">Table of contents</div>
+          <div class="stat-context" style="margin-top: 0.6rem;">Section &rarr; page range &rarr; file. Answers &ldquo;which chapter&rdquo; without running semantic search at all.</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">Images</div>
+          <div class="stat-context" style="margin-top: 0.6rem;">Figure number &rarr; file path &rarr; source page. Resolves <em>which file</em>, never replaces the caption.</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">Formula index</div>
+          <div class="stat-context" style="margin-top: 0.6rem;">JSON as pointer to the Markdown block holding the full LaTeX + derivation + definitions.</div>
+        </div>
+      </div>
+
+      <h3>The architecture this implies</h3>
+      <p class="dim">Current survey work on knowledge-oriented RAG describes production systems increasingly running multiple parallel indexes rather than a single one: vector embeddings for semantic search, structured indexes for exact relationships, hierarchical indexes for category navigation &mdash; pulling from whichever index fits the query type instead of forcing every query through one retrieval path. The Markdown/JSON split here is the document-level version of that same principle.</p>
+
+      <div class="callout decision">
+        <span class="tag">DECISION</span>
+        <p>For register/bit-field content specifically, generate the JSON as the primary artifact during conversion, with a Markdown table alongside purely for human skimming &mdash; not the reverse. The data is enumerable and exact; treating it as prose-to-be-searched loses the one property that made it worth structuring in the first place.</p>
+      </div>
+
+      <div class="callout open">
+        <span class="tag">OPEN</span>
+        <p>If a domain already has a standard structured format for a content type &mdash; SVD for registers, OpenAPI for REST APIs, GenBank for genetic sequences &mdash; that's a reasonable signal the same format belongs in the RAG pipeline too, rather than inventing a new ad-hoc JSON schema per project.</p>
+      </div>
+    </section>
+
+    <section class="page-section" id="page-7">
+      <div class="page-tag">page 07 / 07</div>
       <h2>The minimal-loss checklist &mdash; toggle each item to compare</h2>
       <p class="dim">Five checks, in rough order of impact. Click any card below to expand it, then flip between OCR output and RAG-ready to see the same content rendered both ways.</p>
 
@@ -729,6 +794,11 @@
           <div class="res-kind">tool &middot; OCR engine</div>
           <a class="res-title" href="https://tesseract-ocr.github.io/" target="_blank" rel="noopener">Tesseract OCR documentation</a>
           <p>The classic OCR engine discussed throughout &mdash; reliable for prose, unreliable for math and tables.</p>
+        </div>
+        <div class="resource-card">
+          <div class="res-kind">standard &middot; structured registers</div>
+          <a class="res-title" href="https://arm-software.github.io/CMSIS_5/SVD/html/svd_Format_pg.html" target="_blank" rel="noopener">CMSIS-SVD format specification</a>
+          <p>ARM's structured XML/JSON format for register and bit-field data &mdash; the real-world precedent for Page 6's JSON register pattern.</p>
         </div>
       </div>
     </div>

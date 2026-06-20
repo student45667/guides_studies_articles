@@ -368,7 +368,160 @@ PDF page through to the chunk a retriever hands back to the LLM.
 
 ---
 
-## Appendix — Worked Examples: Bad vs. Good for Each Checklist Item {#page-6}
+## Page 7 — JSON: When It's the Better Format {#page-7}
+
+Everything in this guide so far has argued for Markdown as the primary
+container. That's correct for prose, formulas-with-derivation, and
+anything a human reads as a sentence. But some content inside a
+technical document isn't prose at all — it's lookup data, and forcing
+it into Markdown (even a well-formed table) leaves retrieval worse off
+than treating it as what it actually is: structured key-value data.
+
+### The general rule
+
+JSON earns its place wherever a query is really a **lookup against a
+known key**, not a fuzzy semantic match. Markdown/prose stays better
+wherever a query needs **explanation, reasoning, or context**. Most
+real documents need both side by side, not one replacing the other.
+
+### Where JSON is the better primary format: register bit-fields
+
+This is the clearest case, and it isn't a new idea — the embedded
+systems world already solved it. ARM's **CMSIS-SVD** format formally
+describes every peripheral, register, and bit-field on a Cortex-M
+device as structured data: register name, address offset, reset value,
+access type, and every bit-field's enumerated meaning down to
+individual bit purpose. Debuggers, code generators, and tools like
+`svd2rust` consume it directly, because register data is inherently
+structured, not narrative — there's no sentence to write, only a
+mapping from bit value to meaning.
+
+The RAG-relevant version of that same pattern:
+
+```json
+{
+  "register": "TIM2_CR1",
+  "full_name": "TIM2 Control Register 1",
+  "address_offset": "0x00",
+  "reset_value": "0x0000",
+  "fields": [
+    {
+      "name": "CMS",
+      "bits": "6:5",
+      "access": "read-write",
+      "reset": "0x0",
+      "description": "Center-aligned mode selection. Cannot be changed while the counter is enabled (CEN=1).",
+      "enumerated_values": {
+        "00": "Edge-aligned mode, direction set by DIR",
+        "01": "Center-aligned mode 1, output compare flags set only when counting down",
+        "10": "Center-aligned mode 2, output compare flags set only when counting up",
+        "11": "Center-aligned mode 3, output compare flags set on both up and down counting"
+      }
+    },
+    {
+      "name": "OPM",
+      "bits": "3",
+      "access": "read-write",
+      "reset": "0x0",
+      "description": "One-pulse mode",
+      "enumerated_values": {
+        "0": "Counter does not stop at update event",
+        "1": "Counter stops at the next update event (CEN cleared automatically)"
+      }
+    }
+  ]
+}
+```
+
+A query like *"what does CMS=01 mean on TIM2_CR1"* resolves as one
+exact field lookup. Compare that to the same data flattened into a
+Markdown table and then embedded: a similarity search has no concept
+of "look up row where field=CMS and value=01" — it can only return
+text that's semantically close to the query wording, which risks
+surfacing the wrong row entirely when a register has many similarly-worded
+fields. Exact-match data wants exact-match retrieval, not vector
+similarity.
+
+### Where JSON earns its place, more generally
+
+**Table of contents / document index.** A JSON manifest mapping
+sections to page ranges and files lets a RAG router answer "which
+chapter is this in" instantly, without running semantic search at all:
+
+```json
+{
+  "toc": [
+    {
+      "id": "ch6-timers",
+      "title": "General-Purpose Timers (TIM2-TIM5)",
+      "page_start": 201,
+      "page_end": 248,
+      "file": "sections/ch6_timers.md",
+      "registers": ["registers/TIM2_CR1.json", "registers/TIM2_SR.json"]
+    }
+  ]
+}
+```
+
+**Images.** As covered on Page 1 of this guide — figure number to file
+path to source page. JSON resolves *which file*, it never replaces the
+caption or the surrounding prose explaining what the figure shows.
+Current multimodal RAG research frames this as a real architectural
+tension: page-as-image retrieval preserves layout but needs a
+structured index layer to stay queryable, rather than flattening
+everything to text and losing the layout entirely.
+
+**Formulas with variable explanations.** Here the right split is
+narrower than it might first appear. A formula's *retrieval* value
+comes mostly from the surrounding explanation — why this formula
+applies, what it's derived from — which is prose, not key-value data.
+JSON's role here is a lightweight index entry that lets "find the
+via-spreading-inductance formula" resolve fast, pointing at the
+Markdown block that holds the full LaTeX, derivation, and symbol
+definitions together:
+
+```json
+{
+  "id": "eq-13-35",
+  "latex": "L_{via\\text{-}via} = 2h\\ln(B/D)",
+  "variables": {"L": "loop inductance, pH", "h": "dielectric thickness, mils"},
+  "markdown_ref": "sections/ch13_pdn.md#eq-13-35"
+}
+```
+
+JSON as pointer, Markdown as payload — same split as images, for the
+same reason.
+
+### The architecture this implies
+
+Current survey work on knowledge-oriented RAG describes production
+systems increasingly running multiple parallel indexes rather than a
+single one: vector embeddings for semantic search, structured indexes
+for exact relationships, hierarchical indexes for category navigation —
+pulling from whichever index fits the query type instead of forcing
+every query through one retrieval path. The Markdown/JSON split in
+this guide is the document-level version of that same principle:
+Markdown is the vector-search-friendly layer, JSON is the exact-match
+layer, and which one a piece of content belongs in depends on whether
+a human would explain it in a sentence or look it up in a table.
+
+> **DECISION:** for register/bit-field content specifically, generate
+> the JSON as the primary artifact during conversion, with a Markdown
+> table alongside purely for human skimming — not the reverse. The
+> data is enumerable and exact; treating it as prose-to-be-searched
+> loses the one property (exact lookup) that made it worth structuring
+> in the first place.
+
+> **OPEN:** if a domain already has a standard structured format for a
+> content type — SVD for registers, OpenAPI for REST APIs, GenBank for
+> genetic sequences — that's a reasonable signal the same format (or a
+> close adaptation of it) belongs in the RAG pipeline too, rather than
+> inventing a new ad-hoc JSON schema per project. Worth checking before
+> designing a custom schema from scratch.
+
+---
+
+## Appendix — Worked Examples: Bad vs. Good for Each Checklist Item {#page-8}
 
 Each example below shows realistic "what you'll actually see from OCR"
 on the left and the target structure on the right, as it should appear
