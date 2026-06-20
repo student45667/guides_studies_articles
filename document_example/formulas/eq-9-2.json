@@ -1,0 +1,13 @@
+{
+  "id": "eq-9-2",
+  "name": "Total ADC conversion time",
+  "latex": "t_{CONV} = t_{SMPL} + t_{SAR}",
+  "variables": {
+    "t_CONV": "total conversion time, in ADC clock cycles",
+    "t_SMPL": "sample time, programmable via SMP[2:0], 1.5 to 239.5 cycles",
+    "t_SAR": "successive-approximation time, fixed at 12.5 cycles for 12-bit resolution"
+  },
+  "source_page": 2,
+  "markdown_ref": "page-2#eq-9-2",
+  "related_registers": ["registers/ADC_SMPR1.json"]
+}

@@ -1,0 +1,67 @@
+{
+  "register": "ADC_CR2",
+  "full_name": "ADC Control Register 2",
+  "peripheral": "ADC1",
+  "address_offset": "0x08",
+  "address_absolute": "0x40012408",
+  "size_bits": 32,
+  "reset_value": "0x00000000",
+  "source_page": 3,
+  "fields": [
+    {
+      "name": "ADON",
+      "bits": "0",
+      "access": "read-write",
+      "reset": "0x0",
+      "description": "A/D converter on. Note: writing ADON=1 when it is already 1 starts a conversion if EXTTRIG=0 and SWSTART is also set in the same write.",
+      "enumerated_values": {
+        "0": "ADC disabled (power-down)",
+        "1": "ADC enabled, ready for conversion"
+      }
+    },
+    {
+      "name": "CONT",
+      "bits": "1",
+      "access": "read-write",
+      "reset": "0x0",
+      "description": "Continuous conversion mode",
+      "enumerated_values": {
+        "0": "Single conversion mode",
+        "1": "Continuous conversion mode — converter restarts automatically after each conversion"
+      }
+    },
+    {
+      "name": "ALIGN",
+      "bits": "11",
+      "access": "read-write",
+      "reset": "0x0",
+      "description": "Data alignment in the result register",
+      "enumerated_values": {
+        "0": "Right-aligned",
+        "1": "Left-aligned"
+      }
+    },
+    {
+      "name": "EXTTRIG",
+      "bits": "20",
+      "access": "read-write",
+      "reset": "0x0",
+      "description": "External trigger conversion mode for regular channels",
+      "enumerated_values": {
+        "0": "Trigger detection disabled — conversion can only be started by software (SWSTART)",
+        "1": "Trigger detection enabled — conversion starts on the event selected by EXTSEL"
+      }
+    },
+    {
+      "name": "SWSTART",
+      "bits": "22",
+      "access": "read-write",
+      "reset": "0x0",
+      "description": "Start conversion of regular channels. Set by software, cleared by hardware as soon as conversion starts.",
+      "enumerated_values": {
+        "0": "Reset state, no effect",
+        "1": "Starts conversion of regular channels when EXTTRIG=1 and EXTSEL selects this software event"
+      }
+    }
+  ]
+}

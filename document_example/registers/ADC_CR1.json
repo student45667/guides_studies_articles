@@ -1,0 +1,58 @@
+{
+  "register": "ADC_CR1",
+  "full_name": "ADC Control Register 1",
+  "peripheral": "ADC1",
+  "address_offset": "0x04",
+  "address_absolute": "0x40012404",
+  "size_bits": 32,
+  "reset_value": "0x00000000",
+  "source_page": 3,
+  "fields": [
+    {
+      "name": "RES",
+      "bits": "25:24",
+      "access": "read-write",
+      "reset": "0x0",
+      "description": "Resolution. Reduced resolution shortens t_SAR and increases throughput.",
+      "enumerated_values": {
+        "00": "12-bit resolution, t_SAR = 12.5 cycles",
+        "01": "10-bit resolution, t_SAR = 10.5 cycles",
+        "10": "8-bit resolution, t_SAR = 8.5 cycles",
+        "11": "6-bit resolution, t_SAR = 6.5 cycles"
+      }
+    },
+    {
+      "name": "SCAN",
+      "bits": "8",
+      "access": "read-write",
+      "reset": "0x0",
+      "description": "Scan mode enable",
+      "enumerated_values": {
+        "0": "Scan mode disabled",
+        "1": "Scan mode enabled — converts the full channel group programmed in ADC_SQRx"
+      }
+    },
+    {
+      "name": "AWDEN",
+      "bits": "23",
+      "access": "read-write",
+      "reset": "0x0",
+      "description": "Analog watchdog enable on regular channels",
+      "enumerated_values": {
+        "0": "Analog watchdog disabled on regular channels",
+        "1": "Analog watchdog enabled on regular channels"
+      }
+    },
+    {
+      "name": "DISCEN",
+      "bits": "11",
+      "access": "read-write",
+      "reset": "0x0",
+      "description": "Discontinuous mode on regular channels",
+      "enumerated_values": {
+        "0": "Discontinuous mode disabled",
+        "1": "Discontinuous mode enabled"
+      }
+    }
+  ]
+}

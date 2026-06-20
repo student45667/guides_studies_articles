@@ -1,0 +1,33 @@
+{
+  "device": "MCU-X32F103",
+  "document": "Reference Manual Excerpt — ADC Peripheral",
+  "generated": "2026-06-20",
+  "format_version": "1.0",
+  "toc": [
+    {
+      "id": "sec1-adc-overview",
+      "title": "ADC Overview and Block Diagram",
+      "page": 1,
+      "type": "prose",
+      "topics": ["ADC architecture", "sample-and-hold", "SAR conversion", "channel multiplexer"],
+      "figures": ["fig_p3_a.png"]
+    },
+    {
+      "id": "sec2-adc-timing",
+      "title": "Conversion Timing and Sample Rate",
+      "page": 2,
+      "type": "prose+formula",
+      "topics": ["conversion time", "sample time", "clock division", "throughput"],
+      "formulas": ["formulas/eq-9-2.json"],
+      "figures": ["fig_p4_a.png"]
+    },
+    {
+      "id": "sec3-adc-registers",
+      "title": "ADC Control Registers",
+      "page": 3,
+      "type": "prose+registers",
+      "topics": ["ADC_CR1", "ADC_CR2", "ADC_SMPR1", "resolution", "trigger selection"],
+      "registers": ["registers/ADC_CR1.json", "registers/ADC_CR2.json"]
+    }
+  ]
+}
