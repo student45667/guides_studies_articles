@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code + RAG System - Combined Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+:root {
+  --blueprint-bg: #0a1d2e;
+  --blueprint-bg-2: #0e2438;
+  --blueprint-panel: #102943;
+  --blueprint-line: #1c3a57;
+  --blueprint-grid: rgba(125, 211, 232, 0.055);
+  --ink: #cfe6f0;
+  --ink-dim: #8fb2c4;
+  --ink-faint: #5d7d8f;
+  --cyan: #7dd3e8;
+  --cyan-bright: #aee9f5;
+  --amber: #e8b86d;
+  --amber-dim: #c99a52;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+
+body {
+  margin: 0;
+  background-color: var(--blueprint-bg);
+  background-image:
+    repeating-linear-gradient(0deg, var(--blueprint-grid) 0, var(--blueprint-grid) 1px, transparent 1px, transparent 32px),
+    repeating-linear-gradient(90deg, var(--blueprint-grid) 0, var(--blueprint-grid) 1px, transparent 1px, transparent 32px);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  background: var(--blueprint-bg-2);
+  border-right: 1px solid var(--blueprint-line);
+  padding: 28px 0 60px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  padding: 0 24px 20px 24px;
+  border-bottom: 1px solid var(--blueprint-line);
+  margin-bottom: 12px;
+}
+
+.sidebar-brand .doc-id {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--amber);
+  text-transform: uppercase;
+}
+
+.sidebar-brand .doc-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 6px;
+  color: var(--cyan-bright);
+  line-height: 1.3;
+}
+
+.nav-h1 { display: none; }
+
+.nav-h2 {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  padding: 16px 24px 6px 24px;
+  text-decoration: none;
+  border-top: 1px solid var(--blueprint-line);
+  margin-top: 8px;
+}
+.nav-h2:first-of-type { border-top: none; margin-top: 0; }
+
+.nav-h3 {
+  display: block;
+  font-size: 13.5px;
+  color: var(--ink-dim);
+  text-decoration: none;
+  padding: 5px 24px 5px 34px;
+  border-left: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.nav-h3:hover {
+  color: var(--cyan-bright);
+  border-left-color: var(--cyan);
+  background: rgba(125, 211, 232, 0.06);
+}
+
+/* ---------- Main content ---------- */
+.content {
+  flex: 1;
+  max-width: 880px;
+  padding: 56px 64px 120px 64px;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--cyan-bright);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.01em;
+}
+
+.doc-meta {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--blueprint-line);
+}
+
+h2 {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin: 64px 0 24px 0;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--amber-dim);
+}
+
+h2:first-of-type { margin-top: 0; }
+
+h3 {
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--cyan-bright);
+  margin: 44px 0 16px 0;
+  padding-top: 4px;
+}
+
+h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 28px 0 12px 0;
+}
+
+p { margin: 0 0 16px 0; color: var(--ink); }
+
+a { color: var(--cyan); }
+
+strong { color: var(--cyan-bright); font-weight: 600; }
+
+ul, ol { margin: 0 0 16px 0; padding-left: 24px; }
+li { margin-bottom: 6px; }
+
+hr {
+  border: none;
+  border-top: 1px solid var(--blueprint-line);
+  margin: 48px 0;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: rgba(125, 211, 232, 0.1);
+  color: var(--cyan-bright);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+pre {
+  background: var(--blueprint-panel);
+  border: 1px solid var(--blueprint-line);
+  border-radius: 6px;
+  padding: 18px 20px;
+  overflow-x: auto;
+  margin: 0 0 20px 0;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 24px 0;
+  font-size: 14px;
+}
+
+th {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--amber);
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 2px solid var(--blueprint-line);
+  background: var(--blueprint-panel);
+}
+
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--blueprint-line);
+  color: var(--ink-dim);
+  vertical-align: top;
+}
+
+tr:hover td { background: rgba(125, 211, 232, 0.04); }
+
+/* Callouts: DECISION / OPEN */
+blockquote {
+  margin: 0 0 20px 0;
+  padding: 14px 18px;
+  border-left: 3px solid var(--ink-faint);
+  background: var(--blueprint-panel);
+  border-radius: 0 4px 4px 0;
+}
+
+blockquote p { margin: 0; color: var(--ink-dim); font-size: 14.5px; }
+
+blockquote.decision {
+  border-left-color: var(--amber);
+  background: rgba(232, 184, 109, 0.07);
+}
+blockquote.decision strong { color: var(--amber); }
+
+blockquote.open {
+  border-left-color: var(--cyan);
+  background: rgba(125, 211, 232, 0.06);
+  border-left-style: dashed;
+}
+blockquote.open p { margin: 0 0 6px 0; }
+blockquote.open p:last-child { margin-bottom: 0; }
+blockquote.open strong { color: var(--cyan-bright); }
+
+/* KaTeX tweaks */
+.katex { color: var(--ink); font-size: 1.05em; }
+
+/* Mobile */
+@media (max-width: 880px) {
+  body { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: relative; }
+  .content { padding: 32px 24px 80px 24px; }
+}
+
+/* Print */
+@media print {
+  .sidebar { display: none; }
+  body { background: white; color: black; }
+}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="doc-id">DOC-CLAUDE-RAG-001 &middot; rev. 2026-06-21</div>
+    <div class="doc-title">Claude Code + RAG System</div>
+  </div>
+  <a href="#claude-code-rag-system-combined-reference" class="nav-h1">Claude Code + RAG System - Combined Reference</a>
+<a href="#part-1-plain-language-overview" class="nav-h2">Part 1: Plain-Language Overview</a>
+<a href="#1-the-big-picture-in-one-paragraph" class="nav-h3">1. The big picture, in one paragraph</a>
+<a href="#2-how-claude-code-organizes-itself-the-folderfile-explainer" class="nav-h3">2. How Claude Code organizes itself - the folder/file explainer</a>
+<a href="#3-how-a-question-actually-travels-through-the-system" class="nav-h3">3. How a question actually travels through the system</a>
+<a href="#4-what-rag-actually-means-without-the-acronym-soup" class="nav-h3">4. What "RAG" actually means, without the acronym soup</a>
+<a href="#5-the-document-conversion-problem-simply" class="nav-h3">5. The document-conversion problem, simply</a>
+<a href="#6-the-personas-explained-what-subagents-actually-are" class="nav-h3">6. The "personas" explained - what subagents actually are</a>
+<a href="#7-the-full-folder-layout-annotated" class="nav-h3">7. The full folder layout, annotated</a>
+<a href="#8-where-this-is-weakest-right-now-simply-put" class="nav-h3">8. Where this is weakest right now, simply put</a>
+<a href="#9-what-to-add-later-simply-put" class="nav-h3">9. What to add later, simply put</a>
+<a href="#quick-reference-the-three-sentence-version" class="nav-h3">Quick reference: the three-sentence version</a>
+<a href="#part-2-technical-reference" class="nav-h2">Part 2: Technical Reference</a>
+<a href="#1-system-overview" class="nav-h3">1. System overview</a>
+<a href="#2-component-mapping" class="nav-h3">2. Component mapping</a>
+<a href="#3-converting-your-two-files" class="nav-h3">3. Converting your two files</a>
+<a href="#4-multi-collection-design-broadening-rag-type-1-domain-segmented-vector-search" class="nav-h3">4. Multi-collection design (broadening RAG type 1: domain-segmented vector search)</a>
+<a href="#5-broadening-rag-type-2-structuredexact-query-not-vector-search" class="nav-h3">5. Broadening RAG type 2: structured/exact query, not vector search</a>
+<a href="#6-broadening-rag-type-3-multimodal-rag-for-schematics" class="nav-h3">6. Broadening RAG type 3: multimodal RAG for schematics</a>
+<a href="#7-broadening-rag-type-4-precision-upgrades-to-your-existing-collections-lighter-lift" class="nav-h3">7. Broadening RAG type 4: precision upgrades to your existing collections (lighter lift)</a>
+<a href="#8-subagents-your-personas-mapped-directly" class="nav-h3">8. Subagents - your personas, mapped directly</a>
+<a href="#9-hooks-enforcing-what-personas-used-to-do-by-convention" class="nav-h3">9. Hooks - enforcing what personas used to do by convention</a>
+<a href="#10-claudemd-and-rules" class="nav-h3">10. CLAUDE.md and rules</a>
+<a href="#11-query-time-data-flow" class="nav-h3">11. Query-time data flow</a>
+<a href="#12-final-repo-layout" class="nav-h3">12. Final repo layout</a>
+<a href="#open-decisions" class="nav-h3">Open decisions</a>
+<a href="#13-verification-against-known-implementation-practices" class="nav-h3">13. Verification against known implementation practices</a>
+<a href="#14-rag-ready-document-conversion-verified-against-research" class="nav-h3">14. RAG-ready document conversion, verified against research</a>
+<a href="#15-recommended-skills-and-plugins-for-this-line-of-work" class="nav-h3">15. Recommended skills and plugins for this line of work</a>
+</nav>
+
+<main class="content">
+  <h1>Claude Code + RAG System</h1>
+  <div class="doc-meta">Combined reference &middot; plain-language overview + technical blueprint</div>
+  <h1 id="claude-code-rag-system-combined-reference">Claude Code + RAG System - Combined Reference</h1>
+<p>Two layers in one document. Part 1 is the plain-language walkthrough - read this first, or hand it to anyone who needs the mental model without the implementation detail. Part 2 is the full technical blueprint - the actual architecture, code, and verified research behind Part 1's simplified explanations.</p>
+<p><strong>Quick navigation</strong></p>
+<ul>
+<li>Part 1: Plain-Language Overview - what the system is, how questions flow through it, what each folder/file does, in everyday language</li>
+<li>Part 2: Technical Reference - full architecture, MCP server code, RAG document-conversion research, verification against known practices, recommended skills/plugins</li>
+</ul>
+<hr />
+<h2 id="part-1-plain-language-overview">Part 1: Plain-Language Overview</h2>
+<p>This is a plain-language version of <code>claude-rag-blueprint.md</code>. Same system, fewer assumptions about what you already know. Start here if the folder names and acronyms in the technical version aren't clicking yet.</p>
+<hr />
+<h3 id="1-the-big-picture-in-one-paragraph">1. The big picture, in one paragraph</h3>
+<p>You have a lot of specialized knowledge - mechanics docs, schematics, past code, V93K test programs, wafer data. You want an AI assistant that can actually use that knowledge instead of guessing. There are two separate systems for this, kept deliberately apart:</p>
+<ul>
+<li><strong>Lane 1 - Claude Code.</strong> Runs on your computer, but the actual "thinking" happens on Anthropic's servers over the internet. Good for everyday work. Not for anything that legally can't leave your machine.</li>
+<li><strong>Lane 2 - your existing local setup.</strong> Everything happens on your own computer, nothing goes anywhere. Slower, more setup, but the data never leaves your hands. This is for client work under NDA.</li>
+</ul>
+<p>Think of Lane 1 like using a very smart consultant you call on the phone - convenient, capable, but you wouldn't read them your client's confidential blueprint over that phone. Lane 2 is like having an expert sitting in your locked office who never leaves the building.</p>
+<hr />
+<h3 id="2-how-claude-code-organizes-itself-the-folderfile-explainer">2. How Claude Code organizes itself - the folder/file explainer</h3>
+<p>This is the part that looks like alphabet soup at first. Here's what everything actually does, in order of "you'll touch this most."</p>
+<table>
+<thead>
+<tr>
+<th>File / folder</th>
+<th>What it actually is</th>
+<th>Plain-language analogy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CLAUDE.md</code></td>
+<td>A text file you write. Claude reads it automatically at the start of every conversation, every time.</td>
+<td>A sticky note on your desk that says "remember these things" - except a robot reads it before doing anything.</td>
+</tr>
+<tr>
+<td><code>.claude/agents/*.md</code></td>
+<td>Each file is a different "mode" or "personality" Claude can switch into - a specific job description with its own rules and allowed tools.</td>
+<td>Job descriptions on a wall. "Wafer Analyst" has different duties than "QA Reviewer." Claude puts on the right hat for the task.</td>
+</tr>
+<tr>
+<td><code>.claude/skills/*/SKILL.md</code></td>
+<td>Short reference documents Claude only opens when relevant - not loaded all the time, just pulled out when needed.</td>
+<td>A filing cabinet of cheat sheets. Claude doesn't carry every cheat sheet around, it grabs the right one off the shelf when the topic comes up.</td>
+</tr>
+<tr>
+<td><code>.claude/rules/*.md</code></td>
+<td>Like CLAUDE.md, but scoped to specific file types - only "active" when Claude is touching matching files.</td>
+<td>A rule that's posted only on the door of one specific room, not the whole building.</td>
+</tr>
+<tr>
+<td><code>.claude/settings.json</code></td>
+<td>Configuration: what Claude is allowed to do without asking permission, automated checks that run after edits, etc.</td>
+<td>The rulebook and the alarm system settings, in one file.</td>
+</tr>
+<tr>
+<td><code>.mcp.json</code></td>
+<td>A list of outside tools and databases Claude is allowed to connect to, and how to reach them.</td>
+<td>A phone book - it doesn't contain the actual people, just their numbers and how to dial them.</td>
+</tr>
+<tr>
+<td><code>mcp_servers/*.py</code></td>
+<td>The actual small programs that do the connecting - to your ChromaDB, your wafer data, your schematic library.</td>
+<td>The people the phone book's numbers actually ring through to. Claude asks a question, this program does the legwork and answers.</td>
+</tr>
+<tr>
+<td><code>MEMORY.md</code> (auto-generated)</td>
+<td>Notes Claude writes about itself, automatically, after sessions - "this is how the build command works," "this is a pattern that keeps coming up." You don't write this one.</td>
+<td>Claude's own personal notebook. You don't fill it in, it fills itself in as it learns things about your project.</td>
+</tr>
+</tbody>
+</table>
+<p>The single most important idea in this table: <strong>CLAUDE.md and rules are things you write that Claude always reads. Skills are reference material Claude only opens when relevant. MCP servers are live connections to your actual data, not files Claude reads at all - they're more like Claude picking up a phone and asking a question.</strong></p>
+<hr />
+<h3 id="3-how-a-question-actually-travels-through-the-system">3. How a question actually travels through the system</h3>
+<p>Say you ask: <em>"what's the Cpk formula we used for bin1 IDDQ on lot X23?"</em></p>
+<pre><code>You type the question
+        |
+        v
+Claude checks: do I already know this, or do I need a tool?
+        |
+        v
+Claude calls the &quot;wafer-analysis&quot; phone number (an MCP server)
+        |
+        v
+That server searches your ChromaDB (your indexed documents and past code)
+   and/or looks up the exact number in your spreadsheet-like data
+        |
+        v
+The answer comes back to Claude
+        |
+        v
+Claude writes you a real answer, using your actual data,
+   not a guess based on general knowledge
+</code></pre>
+<p>Nothing in this chain happens automatically by magic - every step is a deliberate piece you set up once (the MCP server, the database, the CLAUDE.md instructions) and then it runs itself from then on.</p>
+<hr />
+<h3 id="4-what-rag-actually-means-without-the-acronym-soup">4. What "RAG" actually means, without the acronym soup</h3>
+<p>RAG stands for Retrieval-Augmented Generation. Strip the jargon: <strong>before answering, go look something up, then answer using what you found</strong> - instead of answering purely from what the AI already "remembers" from training.</p>
+<p>You already built this. Your <code>WEBRAG_INGEST.py</code> script reads your documents, breaks them into small pieces ("chunks"), and stores them in a searchable database (ChromaDB) along with a kind of fingerprint for each piece (an "embedding") that lets the computer find pieces that are <em>about the same topic</em>, even if they don't use the exact same words.</p>
+<p>There are actually two different kinds of "looking something up," and mixing them up causes real problems:</p>
+<ul>
+<li><strong>Fuzzy lookup (vector/embedding search).</strong> Good for "explain how X works" or "find code similar to this." The computer finds things that feel related.</li>
+<li><strong>Exact lookup (a database/spreadsheet query).</strong> Good for "what's the actual yield number for lot X23." You don't want "something similar," you want the one correct number.</li>
+</ul>
+<p>Using fuzzy search for things that need an exact answer is a real source of wrong answers - it's like asking a librarian to "find me a book kind of like this number" when what you actually wanted was a calculator.</p>
+<hr />
+<h3 id="5-the-document-conversion-problem-simply">5. The document-conversion problem, simply</h3>
+<p>Your PDFs (datasheets, the SI/PI textbook, schematics) were made for human eyes, not for a computer to read and understand. When you run a normal scanner-style text extraction ("OCR") over a page with a math formula or a data table, it often gets it badly wrong - not "slightly off," but actually scrambled into nonsense that looks confident and correct.</p>
+<p>Real example from your own research:</p>
+<pre><code>What the OCR produced:    Lyie-via = 21 xhx n(B) pit (13-35)
+What it actually was:     L = 2 × h × ln(B/D)   [a real, usable formula]
+</code></pre>
+<p>If that garbled version gets fed into your search database, two bad things happen: a human skimming it gets confused, and the AI trying to use it to answer a question gets actively misled, with no warning that anything went wrong. This is worse than just leaving that page out entirely.</p>
+<p><strong>The fix:</strong> for pages that are plain prose, cheap classic OCR works fine. For pages with formulas, tables, or diagrams, send those specific pages to a vision-capable AI model (one that can actually "look" at the image, not just read characters) and have it transcribe the page properly - formulas as real math notation, tables as real tables with rows and columns intact, images linked to their captions. You already started building exactly this two-step approach for the SI/PI textbook; it just hasn't been hooked up to your main ingestion script yet.</p>
+<hr />
+<h3 id="6-the-personas-explained-what-subagents-actually-are">6. The "personas" explained - what subagents actually are</h3>
+<p>You already had this idea with your Engineer/Architect/QA setup. In Claude Code, the equivalent is a "subagent" - a text file describing a specific job, the tools that job is allowed to use, and the rules it follows.</p>
+<pre><code class="language-yaml">---
+name: wafer-analyst
+description: Use this one for wafer yield, STDF, and Cpk questions
+---
+
+Always write the simplest version of a script first. No fancy
+error handling until asked. Always note assumptions at the top.
+</code></pre>
+<p>When you (or Claude on its own) decide a task fits the "wafer-analyst" job description, Claude switches into that mode - using that file's rules instead of its general defaults, and only the tools that job is allowed to touch.</p>
+<p>One genuinely important nuance: this "switching into a mode" can happen two different ways, and they're not the same:</p>
+<ul>
+<li><strong>As a side-task ("subagent"):</strong> Claude sends a quick, isolated question off to that persona, gets an answer back, and forgets the back-and-forth happened. Good for a one-off lookup.</li>
+<li><strong>As the whole conversation ("main agent"):</strong> you tell Claude to <em>be</em> that persona for the entire session. Good for an extended back-and-forth, like working through a real analysis together, step by step, where it needs to remember what you discussed five minutes ago.</li>
+</ul>
+<p>Picking the wrong one is a common mistake - using the quick, forgetful version for a task that actually needed ongoing memory of the conversation.</p>
+<hr />
+<h3 id="7-the-full-folder-layout-annotated">7. The full folder layout, annotated</h3>
+<p>This is the same tree from the technical document, with a plain-language comment on every line.</p>
+<pre><code>your-project/
+├── CLAUDE.md                     # always-read instructions: build commands,
+│                                  #   conventions, &quot;remember these things&quot;
+├── .mcp.json                     # phone book - lists every outside data
+│                                  #   connection Claude can use
+├── .claude/
+│   ├── agents/
+│   │   ├── wafer-analyst.md      # job description #1
+│   │   ├── lab-automation-engineer.md   # job description #2
+│   │   └── qa-reviewer.md        # job description #3
+│   ├── skills/
+│   │   ├── v93k-conventions/SKILL.md      # cheat sheet, opened only when relevant
+│   │   └── stdf-record-types/SKILL.md     # another cheat sheet
+│   ├── rules/
+│   │   ├── stdf-parsing.md       # instructions that only apply to STDF files
+│   │   └── v93k-syntax.md        # instructions that only apply to V93K files
+│   └── settings.json             # permissions + automated checks
+├── mcp_servers/
+│   ├── lab_automation_rag.py     # the actual program answering the
+│   │                              #   &quot;lab automation&quot; phone line
+│   ├── wafer_analysis_rag.py     # the program answering the
+│   │                              #   &quot;wafer analysis&quot; phone line
+│   ├── sipi_textbook_rag.py      # same idea, for the textbook
+│   ├── schematics_rag.py         # same idea, for schematic images
+│   └── wafer_data_sql.py         # NOT a search tool - this one does
+│                                  #   exact lookups on real numbers
+└── WEBRAG_INGEST.py               # your existing script that reads
+                                    #   documents and fills the databases
+                                    #   the mcp_servers above search
+</code></pre>
+<p>Your existing <code>WEBRAG_simple.py</code> (the one that loads a local AI model and chats) lives entirely outside this folder, on your local machine, doing Lane 2 work. It has nothing to do with Claude Code and doesn't need to.</p>
+<hr />
+<h3 id="8-where-this-is-weakest-right-now-simply-put">8. Where this is weakest right now, simply put</h3>
+<p>Four honest gaps, easiest first:</p>
+<ol>
+<li><strong>If you edit a document and re-process it, old leftover pieces don't get cleaned up.</strong> The database just keeps growing with stale, outdated fragments mixed in with the current ones.</li>
+<li><strong>Several of these "phone line" programs would each load their own copy of the AI model that turns text into a searchable fingerprint.</strong> On a single graphics card, that's wasteful - better to have one shared copy they all use.</li>
+<li><strong>The document-conversion fix described in section 5 isn't actually wired into your ingestion script yet.</strong> The know-how exists, the script doesn't use it yet.</li>
+<li><strong>Nothing currently checks whether the answers Claude finds are actually correct</strong>, beyond a human reading them and noticing if something seems off. For test-pattern verification work specifically, this is worth fixing properly - a small file with known-correct answers that any generated code gets checked against before you trust it.</li>
+</ol>
+<hr />
+<h3 id="9-what-to-add-later-simply-put">9. What to add later, simply put</h3>
+<p>A few official add-ons (called "plugins") that you install with one command, plus a few custom cheat sheets worth writing once you're using this regularly:</p>
+<p><strong>Add-ons to install:</strong><br />
+- A Python helper that lets Claude understand your code more deeply (catches type errors automatically)<br />
+- A GitHub connector, so Claude can read your issues and pull requests directly<br />
+- A security-checking add-on that reviews every change Claude makes</p>
+<p><strong>Cheat sheets worth writing yourself, once:</strong><br />
+- One that teaches Claude your document-conversion checklist from section 5, so it's followed automatically every time<br />
+- One that's just a template for the "phone line" programs in <code>mcp_servers/</code>, so building the fifth one is copy-paste instead of starting from scratch</p>
+<hr />
+<h3 id="quick-reference-the-three-sentence-version">Quick reference: the three-sentence version</h3>
+<p>CLAUDE.md and rules are notes Claude always reads. Skills are cheat sheets Claude opens only when needed. MCP servers are live phone lines to your actual databases, called only when a question needs them - and whether that line does a "find something similar" search or a "get me the exact number" lookup is a choice you make per database, not something that's automatically right either way.</p>
+<hr />
+<h2 id="part-2-technical-reference">Part 2: Technical Reference</h2>
+<p>System architecture for running your existing local AI pipeline alongside Claude Code, built directly from <code>WEBRAG_INGEST.py</code> and <code>WEBRAG_simple.py</code>.</p>
+<blockquote class="callout decision">
+<p><strong>DECISION:</strong> two lanes, not one. Lane 1 (Claude Code, cloud reasoning) handles non-sensitive work. Lane 2 (your current local stack, unchanged) handles client IP and NDA-bound test programs. Nothing in Lane 2 ever becomes context for Lane 1. See <code>claude-code-vs-offline-stack</code> discussion for the data-handling rationale - consumer plans train on data by default, API/commercial plans don't, but everything still transits Anthropic's API.</p>
+</blockquote>
+<hr />
+<h3 id="1-system-overview">1. System overview</h3>
+<pre><code>┌──────────────────────────────────────────────────────────────────────┐
+│                          YOUR WORKSTATION                              │
+│                                                                          │
+│  ┌────────────────────────┐         ┌──────────────────────────────┐  │
+│  │  LANE 1 - Claude Code    │         │  LANE 2 - local stack         │  │
+│  │  (cloud reasoning)        │         │  (unchanged, fully offline)   │  │
+│  │                            │         │                                │  │
+│  │  - your own conventions   │         │  - WEBRAG_simple.py            │  │
+│  │  - public datasheets       │         │    (Qwen3.5 + Chroma, full     │  │
+│  │  - generic patterns        │         │     local generation)          │  │
+│  │  - non-NDA scripts         │         │  - client schematics, V93K     │  │
+│  │                            │         │    test programs, anything     │  │
+│  │  reasoning -&gt; Anthropic API│         │    under NDA                   │  │
+│  └────────────┬───────────────┘         │  - never touches Claude Code   │  │
+│               │ MCP (stdio / http)       └──────────────────────────────┘  │
+│               ▼                                                            │
+│  ┌───────────────────────────────────────────────────────────────────┐   │
+│  │             MCP RETRIEVAL SERVERS  (run on ai.local)                │   │
+│  │                                                                       │   │
+│  │  ┌────────────────┐ ┌─────────────────┐ ┌──────────────────────┐   │   │
+│  │  │ lab-automation   │ │ wafer-analysis    │ │  sipi-textbook        │   │   │
+│  │  │ (vector, Chroma) │ │ (vector, Chroma)  │ │  (vector + OCR pages) │   │   │
+│  │  └────────────────┘ └─────────────────┘ └──────────────────────┘   │   │
+│  │  ┌────────────────┐ ┌─────────────────┐                             │   │
+│  │  │ wafer-data-sql   │ │ schematics-img    │                          │   │
+│  │  │ (structured,     │ │ (vector + image    │                          │   │
+│  │  │  pandas/parquet) │ │  paths, multimodal) │                          │   │
+│  │  └────────────────┘ └─────────────────┘                             │   │
+│  └───────────────────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<p>Every box under "MCP retrieval servers" is the same underlying pattern: your <code>retrieve_context()</code> function from <code>WEBRAG_simple.py</code>, stripped of the Llama load, wrapped as a callable tool instead of a chat endpoint. Claude Code calls them the same way it calls Bash or Read - it doesn't know or care that one hits a vector DB and another runs a pandas query.</p>
+<hr />
+<h3 id="2-component-mapping">2. Component mapping</h3>
+<table>
+<thead>
+<tr>
+<th>Your stack</th>
+<th>Claude Code primitive</th>
+<th>What changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>recent.md</code> preload</td>
+<td>CLAUDE.md + auto memory</td>
+<td>You stop writing it by hand; Claude writes <code>MEMORY.md</code> itself across sessions</td>
+</tr>
+<tr>
+<td>3-persona (Engineer/Architect/QA)</td>
+<td>Subagents</td>
+<td>Each persona's system prompt becomes a <code>.md</code> file with its own tools and model</td>
+</tr>
+<tr>
+<td><code>WEBRAG_INGEST.py</code></td>
+<td>Unchanged, runs standalone</td>
+<td>Still your indexing step, no rewrite needed</td>
+</tr>
+<tr>
+<td><code>WEBRAG_simple.py</code> (retrieval half)</td>
+<td>MCP server tool</td>
+<td><code>retrieve_context()</code> lifted out, Llama generation dropped</td>
+</tr>
+<tr>
+<td><code>WEBRAG_simple.py</code> (generation half)</td>
+<td>Stays in Lane 2</td>
+<td>Full local chat app, untouched, for NDA work</td>
+</tr>
+<tr>
+<td><code>{{RAG_CONTEXT}}</code> injection</td>
+<td>MCP tool call, on demand</td>
+<td>Claude decides when to retrieve instead of every turn</td>
+</tr>
+<tr>
+<td>Per-domain <code>SYSTEM_PROMPT</code> (wafer analyst, lab automation)</td>
+<td>Subagent body</td>
+<td>Near copy-paste into <code>.claude/agents/*.md</code></td>
+</tr>
+<tr>
+<td>JSON handoff between personas</td>
+<td>Hooks + subagent chaining</td>
+<td>Enforced deterministically instead of by convention</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="3-converting-your-two-files">3. Converting your two files</h3>
+<h4 id="3a-webrag_ingestpy-keep-as-is">3a. <code>WEBRAG_INGEST.py</code> - keep as is</h4>
+<p>No changes needed. This is your indexing pipeline and it runs the same way regardless of what queries the database afterward. Run it per corpus, pointed at a different <code>CHROMA_PATH</code>/<code>COLLECTION_NAME</code> each time, same as you do now for <code>lab_automation</code> vs <code>data_analysis</code>.</p>
+<h4 id="3b-webrag_simplepy-split-in-two">3b. <code>WEBRAG_simple.py</code> - split in two</h4>
+<p><strong>Lane 1 piece (new): the MCP server.</strong> Everything from <code>retrieve_context()</code> onward, minus the <code>Llama</code> load entirely - Claude Code's own model does the reasoning, so you don't need a local LLM in this path at all.</p>
+<pre><code class="language-python"># mcp_servers/wafer_analysis_rag.py
+from mcp.server.fastmcp import FastMCP
+import chromadb
+from sentence_transformers import SentenceTransformer
+
+CHROMA_PATH = &quot;/home/alex/hugging_face_rag/chroma_db_data&quot;
+COLLECTION_NAME = &quot;data_analysis&quot;
+EMBED_MODEL_NAME = &quot;nomic-ai/nomic-embed-text-v1.5&quot;
+
+embed_model = SentenceTransformer(EMBED_MODEL_NAME)
+chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
+collection = chroma_client.get_or_create_collection(
+    name=COLLECTION_NAME,
+    metadata={&quot;hnsw:space&quot;: &quot;cosine&quot;}
+)
+
+mcp = FastMCP(
+    &quot;wafer-analysis-rag&quot;,
+    instructions=&quot;Search wafer yield/parametric analysis docs, STDF handling &quot;
+                 &quot;patterns, and past Cpk/bin-map code. Use for any wafer, lot, &quot;
+                 &quot;STDF, or yield-analysis question.&quot;
+)
+
+@mcp.tool()
+def search_wafer_analysis(query: str, top_k: int = 5, file_ext: str = None) -&gt; str:
+    &quot;&quot;&quot;Search wafer/STDF/yield analysis reference docs and past code.
+
+    file_ext: optional filter, e.g. '.py' to restrict to code chunks only.
+    &quot;&quot;&quot;
+    q_emb = embed_model.encode([query])[0].tolist()
+    where = {&quot;file_ext&quot;: file_ext} if file_ext else None
+    results = collection.query(
+        query_embeddings=[q_emb], n_results=top_k,
+        include=[&quot;documents&quot;, &quot;metadatas&quot;], where=where
+    )
+    if not results[&quot;documents&quot;] or not results[&quot;documents&quot;][0]:
+        return &quot;No matching documents.&quot;
+    parts = [
+        f&quot;[{meta.get('rel_path', 'unknown')}]\n{doc}&quot;
+        for doc, meta in zip(results[&quot;documents&quot;][0], results[&quot;metadatas&quot;][0])
+    ]
+    return &quot;\n\n&quot;.join(parts)
+
+if __name__ == &quot;__main__&quot;:
+    mcp.run()
+</code></pre>
+<p>This is your <code>retrieve_context()</code> function almost unchanged - same embed call, same <code>chroma_collection.query()</code>, same metadata formatting. The only real addition is the optional <code>file_ext</code> filter, which uses metadata you're already writing in <code>WEBRAG_INGEST.py</code> (<code>type</code>, <code>file_ext</code>) but weren't querying against yet.</p>
+<p>Register it:</p>
+<pre><code class="language-bash">claude mcp add --transport stdio wafer-analysis-rag -- python3 mcp_servers/wafer_analysis_rag.py
+</code></pre>
+<p>Or as a persistent HTTP service on ai.local if you want it reachable from the MacBook too - see the prior discussion for the stdio-vs-http tradeoff.</p>
+<p><strong>Lane 2 piece (unchanged): <code>WEBRAG_simple.py</code> as it stands today.</strong> Full local generation, fully offline, for anything that shouldn't go near Anthropic's API. Don't touch this file. Run the two side by side - they read the same Chroma DB, they just serve different purposes.</p>
+<hr />
+<h3 id="4-multi-collection-design-broadening-rag-type-1-domain-segmented-vector-search">4. Multi-collection design (broadening RAG type 1: domain-segmented vector search)</h3>
+<p>You already run separate collections per domain (<code>lab_automation</code>, <code>data_analysis</code>) with separate <code>WEBRAG_simple.py</code> deployments and tuned system prompts per domain. Formalize that as separate MCP servers rather than one generic "search everything" tool:</p>
+<pre><code>mcp_servers/
+├── lab_automation_rag.py      # CHROMA_PATH=.../lab_automation, instruments/SCPI
+├── wafer_analysis_rag.py      # CHROMA_PATH=.../data_analysis, STDF/yield
+├── sipi_textbook_rag.py       # your two-stage OCR pipeline's output
+└── code_patterns_rag.py       # past good code, cleared for general reuse
+</code></pre>
+<p>Same script shape as section 3a, just pointed at different <code>CHROMA_PATH</code>/<code>COLLECTION_NAME</code> and given a sharper <code>description</code> per domain. This matters more than it looks: Claude routes to a tool based on its description, the same way it routes to a skill. A single server with one ambiguous <code>search_everything</code> tool gives Claude no signal about which corpus is relevant; four servers with tight descriptions ("wafer yield and STDF" vs "instrument SCPI control") route correctly without you doing anything extra.</p>
+<pre><code class="language-bash">claude mcp add --transport stdio lab-automation-rag -- python3 mcp_servers/lab_automation_rag.py
+claude mcp add --transport stdio wafer-analysis-rag -- python3 mcp_servers/wafer_analysis_rag.py
+claude mcp add --transport stdio sipi-textbook-rag -- python3 mcp_servers/sipi_textbook_rag.py
+</code></pre>
+<p>Tool Search (on by default in Claude Code) keeps the cost of this low - tool schemas don't enter context until Claude actually searches for a relevant one, so adding more servers doesn't bloat every conversation.</p>
+<hr />
+<h3 id="5-broadening-rag-type-2-structuredexact-query-not-vector-search">5. Broadening RAG type 2: structured/exact query, not vector search</h3>
+<p>Not everything you'd call "RAG" should be vector search. Die-level STDF results, yield numbers, bin counts - these are tabular and you want exact answers, not the nearest semantically-similar chunk. Chunking a CSV into 256-word text blobs and embedding it loses the structure that makes it useful.</p>
+<pre><code class="language-python"># mcp_servers/wafer_data_sql.py
+from mcp.server.fastmcp import FastMCP
+import pandas as pd
+
+DATA_PATH = &quot;/home/alex/wafer_data/parsed_stdf.parquet&quot;  # output of your
+                                                            # STDF-to-CSV/PIR-PRR
+                                                            # join pipeline
+
+mcp = FastMCP(
+    &quot;wafer-data-sql&quot;,
+    instructions=&quot;Exact lookups and aggregations over parsed STDF die-level &quot;
+                 &quot;data: yield by lot/wafer, bin counts, parametric stats. &quot;
+                 &quot;Use for numeric questions, not for explaining concepts.&quot;
+)
+
+@mcp.tool()
+def query_wafer_yield(lot_id: str = None, wafer_id: str = None) -&gt; str:
+    &quot;&quot;&quot;Yield, bin distribution, and pass/fail counts for a lot or wafer.&quot;&quot;&quot;
+    df = pd.read_parquet(DATA_PATH)
+    if lot_id:
+        df = df[df.LOT_ID == lot_id]
+    if wafer_id:
+        df = df[df.WAFER_ID == wafer_id]
+    if df.empty:
+        return &quot;No matching records.&quot;
+    yield_pct = (df.BIN == 1).mean() * 100
+    bin_counts = df.BIN.value_counts().sort_index()
+    return f&quot;Yield: {yield_pct:.2f}%\n\nBin distribution:\n{bin_counts.to_string()}&quot;
+
+if __name__ == &quot;__main__&quot;:
+    mcp.run()
+</code></pre>
+<p>This is the same "expose a tool" pattern, just with <code>pandas</code> instead of <code>chromadb</code> underneath. The distinction worth keeping in mind going forward: vector RAG for "explain this" and "find similar code," structured query tools for "what's the actual number."</p>
+<hr />
+<h3 id="6-broadening-rag-type-3-multimodal-rag-for-schematics">6. Broadening RAG type 3: multimodal RAG for schematics</h3>
+<p>You already built the pieces for this - the two-stage OCR pipeline for the SI/PI textbook (Tesseract classification + Claude vision API routing + PyMuPDF image extraction) and the manifest/index JSON from the Pi Zero 2W OCR work. This formalizes that into the same MCP pattern, with one addition: the tool returns a file path, and Claude reads the actual image afterward rather than relying on OCR text alone.</p>
+<pre><code class="language-python"># mcp_servers/schematics_rag.py
+from mcp.server.fastmcp import FastMCP
+import chromadb
+from sentence_transformers import SentenceTransformer
+
+CHROMA_PATH = &quot;/home/alex/hugging_face_rag/chroma_db_schematics&quot;
+COLLECTION_NAME = &quot;schematics&quot;
+EMBED_MODEL_NAME = &quot;nomic-ai/nomic-embed-text-v1.5&quot;
+
+embed_model = SentenceTransformer(EMBED_MODEL_NAME)
+chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
+collection = chroma_client.get_or_create_collection(COLLECTION_NAME)
+
+mcp = FastMCP(
+    &quot;schematics-rag&quot;,
+    instructions=&quot;Search OCR'd schematic and datasheet pages by description. &quot;
+                 &quot;Returns matched text plus the image file path - call Read &quot;
+                 &quot;on that path afterward to actually view the schematic &quot;
+                 &quot;before answering anything about pin layout, traces, or &quot;
+                 &quot;component placement.&quot;
+)
+
+@mcp.tool()
+def search_schematics(query: str, top_k: int = 3) -&gt; str:
+    &quot;&quot;&quot;Find schematic/datasheet pages matching a description. Returns image
+    paths - view them with Read before answering layout questions.&quot;&quot;&quot;
+    q_emb = embed_model.encode([query])[0].tolist()
+    results = collection.query(
+        query_embeddings=[q_emb], n_results=top_k,
+        include=[&quot;documents&quot;, &quot;metadatas&quot;]
+    )
+    if not results[&quot;documents&quot;] or not results[&quot;documents&quot;][0]:
+        return &quot;No matching pages.&quot;
+    parts = [
+        f&quot;image_path: {meta['image_path']}  (page {meta.get('page', '?')})\n&quot;
+        f&quot;OCR text: {doc}&quot;
+        for doc, meta in zip(results[&quot;documents&quot;][0], results[&quot;metadatas&quot;][0])
+    ]
+    return &quot;\n\n&quot;.join(parts)
+
+if __name__ == &quot;__main__&quot;:
+    mcp.run()
+</code></pre>
+<p>Ingestion (extending <code>WEBRAG_INGEST.py</code>'s pattern to image-bearing pages):</p>
+<pre><code class="language-python"># add to your ingestion pass when processing a PDF/scan source
+for page_num, image_path, ocr_text in extract_pages(pdf_path):  # your existing
+                                                                    # PyMuPDF +
+                                                                    # Tesseract step
+    embedding = embed_model.encode([ocr_text])[0].tolist()
+    chroma_collection.add(
+        ids=[f&quot;{pdf_path}_page_{page_num}&quot;],
+        embeddings=[embedding],
+        metadatas=[{&quot;image_path&quot;: str(image_path), &quot;page&quot;: page_num, &quot;source&quot;: pdf_path}],
+        documents=[ocr_text]
+    )
+</code></pre>
+<p>The retrieval step finds the right page by OCR'd text similarity; Claude's actual visual reasoning happens when it reads the returned image directly. Vector search is doing triage here, not the seeing.</p>
+<hr />
+<h3 id="7-broadening-rag-type-4-precision-upgrades-to-your-existing-collections-lighter-lift">7. Broadening RAG type 4: precision upgrades to your existing collections (lighter lift)</h3>
+<p>Two cheap additions that use metadata you're already writing in <code>WEBRAG_INGEST.py</code> and don't require new infrastructure:</p>
+<p><strong>Metadata filtering</strong> - you already tag <code>type</code> (code/text) and <code>file_ext</code> per chunk but the original <code>retrieve_context()</code> never queries against it. The <code>where</code> parameter added in section 3b's example is the whole change:</p>
+<pre><code class="language-python">results = collection.query(query_embeddings=[q_emb], n_results=top_k, where={&quot;file_ext&quot;: &quot;.tf&quot;})
+</code></pre>
+<p><strong>Hybrid search (keyword + vector)</strong> - pure embedding search misses exact-string matches like a specific register name or test number. Adding BM25 alongside vector search and merging results catches both:</p>
+<pre><code class="language-python">from rank_bm25 import BM25Okapi
+# build once at server startup from the same documents you've already chunked
+bm25 = BM25Okapi([doc.split() for doc in all_chunks])
+keyword_hits = bm25.get_top_n(query.split(), all_chunks, n=top_k)
+# merge keyword_hits with the vector results before returning
+</code></pre>
+<p>Neither of these is a new RAG type so much as making the existing collections more precise. Worth doing before adding more collections, since precision compounds - a better-targeted <code>lab_automation</code> search beats five mediocre new corpora.</p>
+<hr />
+<h3 id="8-subagents-your-personas-mapped-directly">8. Subagents - your personas, mapped directly</h3>
+<p>Your <code>WEBRAG_simple.py</code> <code>SYSTEM_PROMPT</code> for the wafer analyst is already excellent subagent material - the code-output policy, response format rules, and clarifying-question logic transfer almost verbatim. The only thing that changes is the <code>{{RAG_CONTEXT}}</code> static injection becomes a dynamic tool call.</p>
+<pre><code class="language-yaml">---
+name: wafer-analyst
+description: Wafer test data analysis - yield, parametric stats, STDF, bin maps, Cpk. Use for any wafer/lot/STDF/yield question or analysis script request.
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__wafer-analysis-rag__search_wafer_analysis, mcp__wafer-data-sql__query_wafer_yield
+model: sonnet
+memory: project
+---
+
+## Code Output Policy
+First response to any code request: minimal, flat, readable script only.
+No classes. No error handling. No logging. No extras.
+Only after the minimal version works, offer: &quot;Want: [A] error handling
+[B] multi-wafer loop [C] styled plot [D] Cpk table&quot;
+Never combine the minimal version and improvements in the same response.
+
+## Core Responsibilities
+1. Write minimal, clean Python for STDF, CSV, and JSON test data ingestion
+2. Wafer-level metrics: yield, parametric distributions, bin maps, outliers
+3. pandas for tabular data, numpy for statistics, matplotlib/plotly for plots
+4. STDF: use pystdf or semi-ate/stdf libraries, never roll custom binary parsers
+5. Mark unknown fields with # VERIFY: confirm with test engineer
+
+## Script Header (include at top of every generated script)
+# ASSUMED: 'BIN' column contains hard bin number
+# ASSUMED: 'X_COORD', 'Y_COORD' are integer die coordinates
+# VERIFY: confirm passing bin number with test engineer (often bin 1, not always)
+
+Before answering, check search_wafer_analysis for relevant past patterns
+and query_wafer_yield for any specific lot/wafer numbers needed.
+</code></pre>
+<pre><code class="language-yaml">---
+name: lab-automation-engineer
+description: SCPI/VISA instrument control, PSU/scope/VNA scripting. Use for pyvisa, raw socket, or instrument programming requests.
+tools: Read, Write, Edit, Bash, Grep, Glob, mcp__lab-automation-rag__search_lab_automation
+model: sonnet
+---
+
+[your lab-automation SYSTEM_PROMPT, same transfer]
+</code></pre>
+<pre><code class="language-yaml">---
+name: qa-reviewer
+description: Reviews code after engineer/analyst subagents finish. Use proactively after any implementation.
+tools: Read, Grep, Glob, Bash
+disallowedTools: Edit, Write
+model: sonnet
+memory: project
+---
+
+Review against the spec. Check: error handling, edge cases, the
+ASSUMED/VERIFY headers are present and accurate, test coverage.
+Report issues, do not fix them yourself.
+</code></pre>
+<p><code>memory: project</code> gives the wafer-analyst and QA subagents their own persistent notes at <code>.claude/agent-memory/&lt;name&gt;/</code>, separate from the main session - they accumulate "patterns I keep flagging" across projects the same way your RAG corpus does, just at the persona level instead of the document level.</p>
+<hr />
+<h3 id="9-hooks-enforcing-what-personas-used-to-do-by-convention">9. Hooks - enforcing what personas used to do by convention</h3>
+<p>Your JSON handoff protocol between personas relied on the model following it. A hook fires regardless of what the model decides:</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [{
+      &quot;matcher&quot;: &quot;Edit|Write&quot;,
+      &quot;hooks&quot;: [{&quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;./scripts/check-assumed-verify-headers.sh&quot;}]
+    }],
+    &quot;SubagentStop&quot;: [{
+      &quot;matcher&quot;: &quot;wafer-analyst&quot;,
+      &quot;hooks&quot;: [{&quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;./scripts/log-to-memory.sh&quot;}]
+    }]
+  }
+}
+</code></pre>
+<p><code>check-assumed-verify-headers.sh</code> can grep the just-written file for the <code># ASSUMED:</code> / <code># VERIFY:</code> header your system prompt requires and block the write (exit code 2) if it's missing - turning a prompt instruction into a guarantee.</p>
+<hr />
+<h3 id="10-claudemd-and-rules">10. CLAUDE.md and rules</h3>
+<pre><code>project/
+├── CLAUDE.md                     # build commands, file types, conventions
+├── .claude/
+│   └── rules/
+│       ├── stdf-parsing.md       # paths: [&quot;**/*.stdf&quot;, &quot;**/pystdf/**&quot;]
+│       ├── v93k-syntax.md        # paths: [&quot;**/*.tf&quot;, &quot;**/*.spec&quot;, &quot;**/*.lim&quot;]
+│       └── wafer-analysis.md     # paths: [&quot;**/wafer_*.py&quot;, &quot;**/yield_*.py&quot;]
+</code></pre>
+<p>Path-scoped rules only enter context when Claude is actually touching matching files - the deterministic version of "retrieve only what's relevant" that vector search does probabilistically.</p>
+<hr />
+<h3 id="11-query-time-data-flow">11. Query-time data flow</h3>
+<pre><code>You: &quot;what Cpk formula did we use for bin1 IDDQ on lot X23?&quot;
+   │
+   ▼
+Claude Code (wafer-analyst subagent active)
+   │
+   ├─► mcp__wafer-analysis-rag__search_wafer_analysis(&quot;Cpk bin1 IDDQ&quot;)
+   │      embed query -&gt; chroma.query() -&gt; top-5 chunks -&gt; text back
+   │
+   ├─► mcp__wafer-data-sql__query_wafer_yield(lot_id=&quot;X23&quot;)
+   │      pandas filter/groupby -&gt; exact numbers back
+   │
+   └─► Claude reasons over both, writes minimal script per your
+          code-output policy, flags ASSUMED/VERIFY items
+</code></pre>
+<p>Two tool calls, two different retrieval mechanisms, one answer. This is the practical payoff of treating vector RAG and structured query as separate tools rather than forcing everything through one embedding search.</p>
+<hr />
+<h3 id="12-final-repo-layout">12. Final repo layout</h3>
+<pre><code>your-project/
+├── CLAUDE.md
+├── .mcp.json                          # registers all MCP servers below
+├── .claude/
+│   ├── agents/
+│   │   ├── wafer-analyst.md
+│   │   ├── lab-automation-engineer.md
+│   │   └── qa-reviewer.md
+│   ├── skills/
+│   │   ├── v93k-conventions/SKILL.md  # distilled, curated - not raw corpus
+│   │   └── stdf-record-types/SKILL.md
+│   ├── rules/
+│   │   ├── stdf-parsing.md
+│   │   └── v93k-syntax.md
+│   └── settings.json                  # hooks, default permission mode
+├── mcp_servers/
+│   ├── lab_automation_rag.py          # = your retrieve_context(), no Llama
+│   ├── wafer_analysis_rag.py
+│   ├── sipi_textbook_rag.py
+│   ├── schematics_rag.py
+│   └── wafer_data_sql.py
+└── WEBRAG_INGEST.py                   # unchanged, runs standalone per corpus
+</code></pre>
+<p><code>WEBRAG_simple.py</code> (full version, with Llama) lives outside this repo entirely, on ai.local, as your Lane 2 system - it doesn't need to know Claude Code exists.</p>
+<hr />
+<h3 id="open-decisions">Open decisions</h3>
+<blockquote class="callout open">
+<p><strong>OPEN:</strong> one MCP server per domain (as built above) vs one server with a <code>collection</code> parameter on a single tool. Per-domain is more setup now but gives Claude sharper routing signal later as you add more corpora - recommend starting per-domain and only consolidating if server count gets unwieldy (10+).</p>
+<p><strong>OPEN:</strong> where does <code>parsed_stdf.parquet</code> for the structured query tool get generated - a scheduled job off your existing STDF-to-CSV converter, or on-demand inside the MCP tool itself? On-demand is simpler but slower per query; scheduled is faster but adds a freshness question.</p>
+<p><strong>OPEN:</strong> stdio vs persistent HTTP for the MCP servers - stdio is zero-setup if you're running Claude Code directly on ai.local via SSH, HTTP is better if you also want to drive these from the MacBook over Tailscale without re-spawning Python each session.</p>
+</blockquote>
+<hr />
+<h3 id="13-verification-against-known-implementation-practices">13. Verification against known implementation practices</h3>
+<p>The architecture above checked against patterns seen in production RAG systems and agentic coding setups elsewhere. Four tiers, ordered by how much they'd actually bite.</p>
+<h4 id="13a-tier-1-bugs-fix-before-scaling">13a. Tier 1 - bugs, fix before scaling</h4>
+<p><strong>Stale chunk cleanup on re-ingestion.</strong> <code>WEBRAG_INGEST.py</code> IDs chunks as <code>{file_path}_chunk_{chunk_idx}</code>. Re-ingest an edited file that now produces fewer chunks than before, and the old trailing chunks never get deleted - they stay in Chroma forever, orphaned, still surfacing in search results for content that no longer exists in the file. Fix: delete all chunks matching <code>source == file_path</code> before re-adding, or query existing <code>total_chunks</code> for that source and explicitly drop anything beyond the new count.</p>
+<p><strong>Error handling dropped in the MCP server rewrite.</strong> The original <code>retrieve_context()</code> wraps the embed+query call in try/except and returns <code>"[RAG error]"</code> on failure. The section 3b MCP server example doesn't carry that over - if Chroma's locked or the embed model fails to load, it throws instead of degrading gracefully. Should be restored verbatim.</p>
+<p><strong>Resource contention across MCP server processes.</strong> Section 4's design runs five separate MCP servers (lab-automation, wafer-analysis, sipi-textbook, schematics, plus the SQL one), each independently loading <code>SentenceTransformer</code> into memory. On a shared 8GB 3070 also running Ollama and potentially <code>WEBRAG_simple.py</code>'s Qwen3.5-9B for Lane 2, that's wasteful at best and an OOM risk at worst. Fix: one shared embedding service all MCP servers call into, or CPU-pin the embedding step entirely - embedding a short query string is cheap enough to run on CPU, which removes GPU contention.</p>
+<p><strong>No incremental re-indexing.</strong> <code>WEBRAG_INGEST.py</code> does a full <code>os.walk</code> every run. Fine for occasional batch jobs, not viable for tracking an actively-changing codebase. Fix: track mtime or content hash per file, skip unchanged files, only re-embed what moved.</p>
+<h4 id="13b-tier-2-retrieval-quality-known-weak-points">13b. Tier 2 - retrieval quality, known weak points</h4>
+<p>Superseded and substantially extended by section 14 below once the document-conversion research came in - the original list is kept here for completeness.</p>
+<ul>
+<li>Word-count chunking is the wrong unit for code and V93K syntax: 256-word sliding windows routinely cut a function or a <code>.spec</code> testflow block in half.</li>
+<li>No reranking step: pulling top-20 by cosine similarity then reranking with a cross-encoder (<code>bge-reranker</code>, runs fine on CPU) down to the top 5 actually sent to Claude is a bigger precision lever than hybrid search alone.</li>
+<li>One embedding model across prose, code, and dense structured syntax: code-specific embeddings, or at minimum keeping code chunks in their own collection, consistently outperforms general embeddings on code retrieval.</li>
+<li>No eval loop: nothing checks whether retrieval is actually finding the right thing. Claude Code's own <code>skill-creator</code> plugin has this pattern built in (golden test queries, pass/fail grading, before/after benchmark) and the same discipline should apply to the MCP retrieval tools here.</li>
+</ul>
+<h4 id="13c-tier-3-architecture-choices-not-yet-justified">13c. Tier 3 - architecture choices not yet justified</h4>
+<p><strong>Subagent vs <code>--agent</code> for the wafer-analyst.</strong> Subagents start with zero conversation history on every invocation - fine for isolated lookups, bad for the iterative back-and-forth ("now filter to lot X23," "now compare against last week's run") that data analysis usually is. Running the agent definition as the main thread instead (<code>claude --agent wafer-analyst</code>) keeps full conversational continuity while still swapping system prompt/tools/model. Subagent delegation fits the QA reviewer better, since that genuinely is a bounded "look at this, report back" task.</p>
+<p><strong>Pure vector RAG for code is the weaker industry default now.</strong> Tools like Sourcegraph Cody and GitHub Copilot lean on symbol/AST-aware search (LSP, call graphs, references) combined with embeddings, not embeddings alone. Section 8's <code>code-intelligence</code> plugins (<code>pyright-lsp</code>, <code>clangd-lsp</code>) cover this directly. For the past-code corpus specifically: lean on Grep/Glob over an actual checked-out reference repo plus code-intelligence plugins, and reserve vector RAG for the genuinely fuzzy stuff (docs, schematics, prose).</p>
+<p><strong>Hook and QA subagent overlap, unclear division.</strong> Section 9's <code>PostToolUse</code> hook (grep for the <code>ASSUMED/VERIFY</code> header) and the QA subagent (general code review) currently both do vague "review the output" duty. Clean split: hooks for deterministic, syntactic checks (header present or not), subagent for semantic correctness (is the assumption actually reasonable, does the Cpk formula match the spec).</p>
+<p><strong>No ground-truth verification loop.</strong> The strong version of "give Claude a way to verify its work" for STDF parsing specifically is a small fixture - a sample STDF file with known yield/bin numbers - that generated parsing code runs against before it's trusted, not just a style review. Given verification is part of the actual consulting pitch (test pattern verification), this is a real gap rather than a nice-to-have.</p>
+<h4 id="13d-tier-4-worth-knowing-about-lower-priority-at-this-scale">13d. Tier 4 - worth knowing about, lower priority at this scale</h4>
+<p><strong>HyDE / LLM-enriched chunks at ingestion.</strong> Generating a short synthetic summary per chunk with a cheap local model before embedding, instead of embedding raw text, is a known technique that improves retrieval over vanilla chunk-and-embed. Adds an ingestion-time LLM pass - more complexity than likely needed yet.</p>
+<p><strong>Graph-based retrieval (GraphRAG) for multi-hop questions</strong> ("what tests touch components from this schematic") exists in production systems handling highly interconnected technical knowledge. Likely overkill until the schematics/test-program corpus is large enough that multi-hop questions come up often.</p>
+<p><strong>No observability on retrieval itself.</strong> Logging what was queried and what came back, even to a flat file, would surface retrieval failures directly instead of inferring them from bad downstream answers.</p>
+<hr />
+<h3 id="14-rag-ready-document-conversion-verified-against-research">14. RAG-ready document conversion, verified against research</h3>
+<p>The single biggest gap in section 13's retrieval-quality critique: it jumped straight to retrieval-layer fixes (reranking, hybrid search, code-aware chunking) without addressing extraction quality at all. For mechanics/hardware docs, schematics, and the SI/PI textbook specifically, extraction is upstream of everything else and likely the dominant loss source - no reranker recovers a formula that was already OCR'd into garbage before it reached the vector DB.</p>
+<blockquote class="callout decision">
+<p><strong>DECISION:</strong> prioritize extraction quality above reranking. Clean extraction with mediocre retrieval still returns usable content; garbage extraction with perfect retrieval still returns garbage.</p>
+</blockquote>
+<h4 id="why-classic-ocr-fails-on-technical-content">Why classic OCR fails on technical content</h4>
+<p>Classic OCR engines are trained on prose. They have no model of two-dimensional mathematical layout - subscripts, nested fractions, matrices, and register tables defeat a line-by-line text recognizer because it reads visual shapes as if they were ordinary words read left to right. This isn't a tuning problem solvable with a higher DPI scan, it's an architectural mismatch. A real example from OCR run on a signal-integrity textbook page:</p>
+<pre><code>Lyie-via = 21 xhx n(B) pit (13-35)
+</code></pre>
+<p>What it was supposed to be:</p>
+<p>$$L_{via\text{-}via} = 2 \times h \times \ln\left(\frac{B}{D}\right) \quad \text{[pH]} \tag{13-35}$$</p>
+<p>The OCR output isn't just imprecise, it's actively wrong in a way that misleads both a human skimming it and an embedding model representing it semantically - worse than no extraction at all, because it carries false confidence.</p>
+<p><strong>Table 3 - conversion method comparison for technical PDF content</strong></p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Formulas</th>
+<th>Tables</th>
+<th>Cost</th>
+<th>Best for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tesseract / classic OCR</td>
+<td>Poor</td>
+<td>Poor</td>
+<td>Free, fast</td>
+<td>Plain prose pages only</td>
+</tr>
+<tr>
+<td><code>pdfplumber</code> / <code>camelot</code></td>
+<td>N/A</td>
+<td>Good</td>
+<td>Free, fast</td>
+<td>Born-digital PDFs with text layer + visible table structure</td>
+</tr>
+<tr>
+<td>Mathpix (math OCR)</td>
+<td>Very good</td>
+<td>Good</td>
+<td>~$0.002-0.005/page</td>
+<td>High-volume formula-heavy documents</td>
+</tr>
+<tr>
+<td>Vision-capable LLM</td>
+<td>Very good</td>
+<td>Very good</td>
+<td>~2,000-2,300 tok/page</td>
+<td>Mixed content - formulas + tables + figures + prose together, scanned PDFs with no text layer</td>
+</tr>
+</tbody>
+</table>
+<h4 id="target-format-structured-markdown-four-rules">Target format: structured Markdown, four rules</h4>
+<ol>
+<li><strong>Headers define chunk boundaries.</strong> <code>##</code>/<code>###</code> per section, each section written to be understandable in isolation - a chunk should make sense retrieved alone, without relying on "as mentioned above."</li>
+<li><strong>Formulas as LaTeX, with symbol definitions attached.</strong> The definition list isn't optional decoration - without it, a retriever can match the equation but the LLM has no way to explain what the variables mean.</li>
+<li><strong>Tables as real Markdown tables, never flattened to prose.</strong> Column structure preserved means a retriever returns one complete, correct row (symbol, value, unit, condition all attached) instead of numbers floating free of their meaning.</li>
+<li><strong>Images inline at point of reference, with a manifest.</strong> An HTML comment (<code>&lt;!-- figure-ref: Figure 13-38 --&gt;</code>) carries machine-readable metadata invisibly to a RAG indexer while staying invisible to a human reading it rendered.</li>
+</ol>
+<h4 id="hybrid-routing-pipeline-already-partially-built">Hybrid routing pipeline (already partially built)</h4>
+<pre><code>1. Diagnostic pass        pdfinfo / pdffonts / sample pdftotext
+2. Page classification    cheap, local heuristics, no API calls
+                           -&gt; route: &quot;prose&quot; | &quot;vision&quot; | &quot;figure_only&quot;
+3. Routed extraction      prose -&gt; Tesseract (cleaned)
+                           vision -&gt; LLM, RAG-ready contract enforced
+4. Assembly                ebook.md + images/ + manifest.json
+</code></pre>
+<p>This is the same shape as the existing two-stage SI/PI textbook pipeline (Tesseract classification + Claude vision API routing + PyMuPDF image extraction). Cost concretely: ~46K tokens for a 21-page excerpt, ~220K for 100 pages, ~1.7-2M for an 800-page document routed entirely through vision, ~500-700K for the same 800 pages hybrid-routed - the hybrid split is usually where the real savings live, since formulas and tables cluster in specific sections rather than spreading evenly.</p>
+<h4 id="chunking-refined">Chunking, refined</h4>
+<ul>
+<li><strong>Structural boundaries beat fixed-token splitting</strong> for documents where a formula derivation or a register's bit-field table needs to stay intact as a unit. A fixed split has no awareness of where a table starts and ends and can sever it mid-structure.</li>
+<li><strong>Chunk size depends on query type</strong>: 256-512 tokens for factoid lookups, 512-1024 for multi-step technical explanations requiring multi-concept reasoning. The current <code>CHUNK_SIZE = 256</code> in <code>WEBRAG_INGEST.py</code> sits at the factoid end - reasonable for V93K dense config lookups, likely too small for SI/PI textbook content needing a full derivation.</li>
+<li><strong>Overlap is less settled than it used to be.</strong> A January 2026 systematic analysis (SPLADE retrieval, Mistral-8B, Natural Questions) found overlap provided no measurable benefit and only increased indexing cost - directly relevant since <code>WEBRAG_INGEST.py</code>'s <code>CHUNK_OVERLAP = 50</code> (20%) was set on the older default assumption. Worth testing against the actual corpus rather than assuming the figure is still right.</li>
+<li><strong>Hierarchical (parent/child) chunking</strong> - small chunks for retrieval matching, a larger parent chunk returned to the LLM for context - is the most widely adopted production pattern for mixed-density documents in 2025-2026. For a single-engineer offline pipeline, structural chunking alone likely gets most of the benefit without the added complexity of maintaining two index layers; worth treating as the next lever only if structural chunking alone proves insufficient.</li>
+</ul>
+<p><strong>Table 4 - practical chunking defaults</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Starting point</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chunk boundary</td>
+<td>Structural (page/section headers)</td>
+</tr>
+<tr>
+<td>Chunk size</td>
+<td>256-512 tok factoid, 512-1024 tok analytical</td>
+</tr>
+<tr>
+<td>Overlap</td>
+<td>Start at 0-10%, increase only if observed loss</td>
+</tr>
+<tr>
+<td>Tables/registers</td>
+<td>Keep whole, never split mid-table</td>
+</tr>
+<tr>
+<td>Formulas</td>
+<td>Keep formula + definitions as one atomic unit</td>
+</tr>
+</tbody>
+</table>
+<h4 id="json-vs-markdown-refining-section-5s-structured-query-tool">JSON vs Markdown: refining section 5's structured-query tool</h4>
+<p>Section 5 proposed <code>wafer_data_sql.py</code> for exact yield/bin lookups specifically. The general principle is broader: any enumerable, exact-match data wants exact-match retrieval, not vector similarity - the same reasoning extends to V93K <code>.lvl</code>/<code>.tim</code>/<code>.pin</code> parameter files, which <code>WEBRAG_INGEST.py</code> currently chunks by word count and embeds like prose, the exact mistake this principle warns against.</p>
+<p>The clearest precedent is register bit-fields - ARM's CMSIS-SVD format already solves this for embedded systems, describing every register and bit-field as structured data (name, address offset, reset value, access type, enumerated meanings) rather than narrative. A query like "what does CMS=01 mean on TIM2_CR1" resolves as one exact field lookup against JSON; the same data flattened into a Markdown table and embedded has no concept of "look up row where field=X and value=Y," only "text semantically close to the query wording," which risks surfacing the wrong row entirely.</p>
+<blockquote class="callout decision">
+<p><strong>DECISION:</strong> for register/bit-field and V93K parameter content, generate JSON as the primary artifact during conversion, with a Markdown table alongside purely for human skimming - not the reverse.</p>
+</blockquote>
+<p>Two more places JSON earns its place, both directly relevant here:</p>
+<ul>
+<li><strong>Image/figure manifest</strong> - figure number -&gt; file path -&gt; source page -&gt; caption -&gt; section. This is a more concrete schema than section 6's <code>schematics_rag.py</code> sketch (which only returned <code>image_path</code> and <code>page</code> from chunk metadata) and should replace it:</li>
+</ul>
+<pre><code class="language-json">{
+  &quot;figures&quot;: {
+    &quot;fig_p012_a.png&quot;: {
+      &quot;page&quot;: 12,
+      &quot;figure_number&quot;: &quot;13-38&quot;,
+      &quot;caption&quot;: &quot;Where should the capacitor go - on the same surface as the BGA or directly under the BGA?&quot;,
+      &quot;section&quot;: &quot;Capacitor Placement Relative to the BGA&quot;,
+      &quot;path&quot;: &quot;images/fig_p012_a.png&quot;
+    }
+  }
+}
+</code></pre>
+<ul>
+<li><strong>Table of contents / document index</strong> - section -&gt; page range -&gt; file, answers "which chapter" without running semantic search at all.</li>
+</ul>
+<p>This validates the multi-MCP-server design from section 4 independently: current survey work on knowledge-oriented RAG describes production systems running multiple parallel indexes rather than one - vector embeddings for semantic search, structured indexes for exact relationships, hierarchical indexes for category navigation - pulling from whichever index fits the query type. The Markdown/JSON split is the document-level version of the same principle already built into this blueprint's server-per-domain architecture.</p>
+<h4 id="the-gap-between-this-research-and-the-running-pipeline">The gap between this research and the running pipeline</h4>
+<p><code>WEBRAG_INGEST.py</code> as it stands implements none of this yet - plain UTF-8 read, word-count chunking uniformly across every file type, no vision-LLM routing, no LaTeX preservation, no JSON sidecar generation. The two-stage OCR work already done for the SI/PI textbook (Tesseract classification + Claude vision routing) is the right shape for the hybrid pipeline described above, but the uploaded ingestion script is currently a separate, simpler tool that doesn't call into it. Closing this gap is the highest-leverage item in this entire document once extraction priority is accepted.</p>
+<hr />
+<h3 id="15-recommended-skills-and-plugins-for-this-line-of-work">15. Recommended skills and plugins for this line of work</h3>
+<h4 id="official-marketplace-plugins-plugin-install-nameclaude-plugins-official">Official marketplace plugins (<code>/plugin install &lt;name&gt;@claude-plugins-official</code>)</h4>
+<table>
+<thead>
+<tr>
+<th>Plugin</th>
+<th>One-line</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pyright-lsp</code></td>
+<td>Python type-checking and go-to-definition for the FastAPI/ChromaDB/MCP server code, requires <code>pyright-langserver</code> installed</td>
+</tr>
+<tr>
+<td><code>clangd-lsp</code></td>
+<td>C/C++ code intelligence for the BeagleBone PRU and SPI DAQ work, requires <code>clangd</code> installed</td>
+</tr>
+<tr>
+<td><code>github</code></td>
+<td>Pre-configured MCP connection to GitHub so Claude can read issues/PRs on the <code>student45667</code> repos without manual setup</td>
+</tr>
+<tr>
+<td><code>commit-commands</code></td>
+<td>Adds <code>/commit</code>-style skills for staging, writing commit messages, and opening PRs</td>
+</tr>
+<tr>
+<td><code>security-guidance</code></td>
+<td>Reviews every edit for common vulnerabilities and fixes them in the same session, relevant once client data touches these pipelines</td>
+</tr>
+<tr>
+<td><code>pr-review-toolkit</code></td>
+<td>Specialized review agents, worth it once freelance work means other people's PRs land in the queue</td>
+</tr>
+<tr>
+<td><code>mcp-server-dev</code></td>
+<td>Scaffolds new MCP servers from a description, useful given how many are being built here (lab-automation, wafer-analysis, schematics, etc.)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="custom-skills-worth-building-for-this-domain">Custom skills worth building for this domain</h4>
+<p>Not installable - the shape of skill people doing RAG-over-technical-docs and hardware test engineering typically write for themselves once a pattern repeats a few times.</p>
+<table>
+<thead>
+<tr>
+<th>Skill</th>
+<th>One-line</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pdf-to-rag-conversion</code></td>
+<td>Codifies section 14's checklist (LaTeX formulas, real Markdown tables, image manifest, structural chunking) so Claude follows it automatically on every new datasheet conversion</td>
+</tr>
+<tr>
+<td><code>mcp-rag-server-pattern</code></td>
+<td>The FastMCP + Chroma + embedding boilerplate from section 3b as a template, so the 5th domain-specific MCP server is "fill in the collection name" instead of written from scratch</td>
+</tr>
+<tr>
+<td><code>stdf-record-types</code></td>
+<td>Reference for PIR/PRR/PTR/FTR field names and the die-index join pattern, so Claude stops re-deriving STDF structure from scratch each session</td>
+</tr>
+<tr>
+<td><code>v93k-syntax-conventions</code></td>
+<td>Already planned in section 12 - testflow/testsuite/pattern block structure for <code>.tf</code>/<code>.spec</code>/<code>.lim</code> files</td>
+</tr>
+<tr>
+<td><code>chunking-defaults</code></td>
+<td>Table 4 above as a standing reference, so every new ingestion script starts from tested defaults instead of word-count-256 by habit</td>
+</tr>
+<tr>
+<td><code>register-bitfield-json</code></td>
+<td>The CMSIS-SVD-style JSON schema from section 14 as a template for any new register/parameter table converted, keeping the shape consistent across datasheets</td>
+</tr>
+</tbody>
+</table>
+<p><code>pdf-to-rag-conversion</code> and <code>mcp-rag-server-pattern</code> carry the highest payoff of the six, given how much of section 14's conversion work and section 4's server-per-domain pattern are about to repeat.</p>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "$", right: "$", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+
+</body>
+</html>
