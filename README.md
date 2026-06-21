@@ -12,6 +12,7 @@ HTML version for a richer reading experience.
 | Topic | Markdown | Interactive HTML |
 |---|---|---|
 | What are ideal materials for RAG with minimal loss? — a guide to converting technical PDFs (formulas, tables, images) into RAG-ready documents without information loss | [rag_minimal_loss_guide.md](./rag_minimal_loss_guide.md) | [Open rendered preview ↗](https://htmlpreview.github.io/?https://github.com/student45667/guides_studies_articles/blob/main/rag_minimal_loss_guide.html) |
+| Claude Code + RAG System — a blueprint for combining a local offline RAG / three-persona pipeline (ChromaDB, llama.cpp) with Claude Code's native primitives (CLAUDE.md, subagents, skills, MCP servers, hooks), verified against known production RAG practices | [claude-rag-blueprint-combined.md](./claude-rag-blueprint-combined.md) | [Open rendered preview ↗](https://htmlpreview.github.io/?https://github.com/student45667/guides_studies_articles/blob/main/claude-rag-blueprint.html) |
 
 > The interactive HTML link uses [htmlpreview.github.io](https://htmlpreview.github.io/)
 > to render the `.html` file live in-browser straight from GitHub —
@@ -42,6 +43,14 @@ HTML version for a richer reading experience.
   vision-based transcription instead
 - Hybrid extraction pipelines for large documents (cost-aware routing)
 - Chunking strategy and structure for technical-document RAG
+- Mapping an existing local/offline RAG and three-persona AI pipeline
+  onto Claude Code's native primitives (CLAUDE.md, subagents, skills,
+  MCP servers, hooks, worktrees)
+- Domain-segmented MCP server architecture: vector search vs.
+  structured/exact-match retrieval for engineering data (STDF records,
+  register bit-fields)
+- Verifying a RAG architecture against known production implementation
+  practices and document-conversion research
 
 More studies will be added here as they're written.
 
@@ -61,5 +70,3 @@ zero-setup fallback or for one-off shares.
 
 ---
 
-<!-- repo: guides_studies_articles -->
-<!-- maintained by: Alex Chiomny -->
