@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Guide: VNA Measurements for Amplifiers and TIAs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        
+        .toc {
+            background: #f8f9fa;
+            padding: 30px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .toc h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .toc ul {
+            list-style: none;
+            columns: 2;
+            gap: 30px;
+        }
+        
+        .toc li {
+            margin-bottom: 8px;
+        }
+        
+        .toc a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .toc a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        
+        main {
+            padding: 40px;
+        }
+        
+        section {
+            margin-bottom: 50px;
+        }
+        
+        h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h3 {
+            color: #764ba2;
+            font-size: 1.5em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        h4 {
+            color: #555;
+            font-size: 1.2em;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        tr:hover {
+            background: #f0f4ff;
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d73a49;
+        }
+        
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .diagram {
+            background: #f9f9f9;
+            border: 2px dashed #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+        
+        .formula {
+            background: #f0f4ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            font-style: italic;
+            text-align: center;
+        }
+        
+        .source-link {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f0f4ff;
+            border-radius: 4px;
+        }
+        
+        .source-link a {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        
+        .source-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .highlight {
+            background-color: #ffeb3b;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9em;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+            z-index: 100;
+            transition: background 0.3s;
+        }
+        
+        .back-to-top:hover {
+            background: #764ba2;
+        }
+        
+        .back-to-top.show {
+            display: block;
+        }
+        
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+            margin-left: 0;
+            margin-bottom: 15px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Comprehensive Guide: VNA Measurement Methodologies</h1>
+            <p>Amplifiers, TIAs, Bias Tees, and Conical Coils — Complete Reference</p>
+        </header>
+        
+        <div class="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+                <li><a href="#introduction">Introduction & User Questions</a></li>
+                <li><a href="#fundamentals">Fundamental Concepts</a></li>
+                <li><a href="#dbm-conversion">dBm to Watts & Voltage</a></li>
+                <li><a href="#amplifier-measurement">Amplifier Measurement</a></li>
+                <li><a href="#bias-tees">Bias Tees & Conical Coils</a></li>
+                <li><a href="#attenuators">Output Attenuators</a></li>
+                <li><a href="#tia-measurement">TIA Measurements</a></li>
+                <li><a href="#examples">Practical Examples</a></li>
+                <li><a href="#sources">Source Links & References</a></li>
+            </ul>
+        </div>
+        
+        <main>
+            <section id="introduction">
+                <h2>1. Introduction & User Questions</h2>
+                
+                <h3>User Background & Context</h3>
+                <p>This guide addresses questions from a hardware/semiconductor engineer with ~15 years experience in mixed-signal ASIC test, ATE development, and signal integrity. Key interests: characterizing amplifiers and transimpedance amplifiers (TIAs) using network analyzers, focusing on real-world methodologies and practical applications.</p>
+                
+                <h3>Core Questions Addressed</h3>
+                <div class="info-box">
+                    <h4>Q1: VNA Measurement Methodology for Active Amplifiers</h4>
+                    <p><strong>Question:</strong> "How do I measure input/output impedance, gain, and transfer function of an amplifier using VNA? What are the setup, calibration, de-embedding, and S-parameter extraction procedures?"</p>
+                    <p><strong>Answer Location:</strong> Section 4 (VNA Measurement for Active Amplifiers)</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4>Q2: Output Attenuator Requirements</h4>
+                    <p><strong>Question:</strong> "Do I need attenuators on the output to protect the VNA or stay in measurement range?"</p>
+                    <p><strong>Answer Location:</strong> Section 6 (Output Attenuators & VNA Protection)</p>
+                    <p><strong>TL;DR:</strong> Yes—primarily for VNA protection. Receivers typically rated +20 to +30 dBm max. Use 6–10 dB pads for high-gain amplifiers.</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4>Q3: Bias Tee and Conical Coil Research</h4>
+                    <p><strong>Question:</strong> "Find and document examples of bias tees and conical coils used in amplifier VNA measurements."</p>
+                    <p><strong>Answer Location:</strong> Section 5 (Bias Tees & Conical Coils) + Section 9 (Commercial Products & Specifications)</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4>Q4: High-Impedance TIA Input Feeding from VNA</h4>
+                    <p><strong>Question:</strong> "What methodologies exist for feeding a signal to a TIA with high impedance input using a VNA?"</p>
+                    <p><strong>Answer Location:</strong> Section 7 (TIA Measurements with VNA) — Three methodologies detailed</p>
+                </div>
+            </section>
+            
+            <section id="fundamentals">
+                <h2>2. Fundamental Concepts</h2>
+                
+                <h3>Passive vs. Active Measurements</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aspect</th>
+                            <th>Passive Fixture</th>
+                            <th>Active Amplifier</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Power Supply</td>
+                            <td>None</td>
+                            <td>Required (VCC, VGS/IDS)</td>
+                        </tr>
+                        <tr>
+                            <td>Bias Point</td>
+                            <td>N/A</td>
+                            <td>Critical (defines gain, impedance)</td>
+                        </tr>
+                        <tr>
+                            <td>S-Parameters</td>
+                            <td>Frequency-independent (ideally)</td>
+                            <td>Bias-dependent</td>
+                        </tr>
+                        <tr>
+                            <td>Stability</td>
+                            <td>Always stable</td>
+                            <td>Risk of oscillation</td>
+                        </tr>
+                        <tr>
+                            <td>Measurement Concern</td>
+                            <td>Path loss, discontinuities</td>
+                            <td>Gain, impedance transformation, oscillation</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Key Terminology</h3>
+                <ul>
+                    <li><strong>S-parameters:</strong> Scattering parameters; voltage ratios in a 50 Ω system</li>
+                    <li><strong>Z-parameters:</strong> Impedance matrix; includes transimpedance (V/I)</li>
+                    <li><strong>Return loss:</strong> dB magnitude of reflected signal; RL = −20 log₁₀(|Γ|)</li>
+                    <li><strong>Insertion loss:</strong> dB magnitude of transmitted signal through passive network</li>
+                    <li><strong>Bias tee:</strong> High-pass network for RF, low-pass for DC; allows simultaneous AC/DC injection</li>
+                    <li><strong>Transimpedance (TIA):</strong> Amplifier topology converting input current to output voltage</li>
+                    <li><strong>De-embedding:</strong> Mathematically removing fixture parasitics to move reference plane to DUT terminals</li>
+                </ul>
+            </section>
+            
+            <section id="dbm-conversion">
+                <h2>3. dBm to Watts & Voltage Conversion</h2>
+                
+                <h3>Conversion Formulas</h3>
+                <div class="formula">
+                    P<sub>watts</sub> = 10<sup>(dBm/10)</sup> / 1000
+                </div>
+                
+                <div class="formula">
+                    V<sub>peak</sub> (50Ω) = √(P<sub>watts</sub> × 50)
+                </div>
+                
+                <h3>Reference Table: 10–40 dBm</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>dBm</th>
+                            <th>Watts</th>
+                            <th>mW</th>
+                            <th>Peak Voltage (V)</th>
+                            <th>Peak Voltage (mV)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>10</td>
+                            <td>0.01 W</td>
+                            <td>10 mW</td>
+                            <td>0.707 V</td>
+                            <td>707 mV</td>
+                        </tr>
+                        <tr>
+                            <td>20</td>
+                            <td>0.1 W</td>
+                            <td>100 mW</td>
+                            <td>2.236 V</td>
+                            <td>2,236 mV</td>
+                        </tr>
+                        <tr>
+                            <td>30</td>
+                            <td><strong>1 W</strong></td>
+                            <td><strong>1,000 mW</strong></td>
+                            <td><strong>7.071 V</strong></td>
+                            <td>7,071 mV</td>
+                        </tr>
+                        <tr>
+                            <td>40</td>
+                            <td>10 W</td>
+                            <td>10,000 mW</td>
+                            <td>22.361 V</td>
+                            <td>22,361 mV</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Key Insight: Decibel Doubling Rule</h3>
+                <ul>
+                    <li><strong>Every +10 dB = 10× power increase</strong>
+                        <ul>
+                            <li>10 → 20 dBm: 10 mW → 100 mW</li>
+                            <li>20 → 30 dBm: 100 mW → 1 W</li>
+                            <li>30 → 40 dBm: 1 W → 10 W</li>
+                        </ul>
+                    </li>
+                    <li><strong>Every +3 dB ≈ 1.414× voltage increase</strong> (√2)</li>
+                </ul>
+                
+                <h3>VNA Safety Context</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Power</th>
+                            <th>Status</th>
+                            <th>Recommendation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>+10 to +20 dBm</td>
+                            <td>Safe</td>
+                            <td>Typical small-signal drive</td>
+                        </tr>
+                        <tr>
+                            <td>+20 to +25 dBm</td>
+                            <td>Marginal</td>
+                            <td>Add attenuator if unsure</td>
+                        </tr>
+                        <tr>
+                            <td>+25 to +30 dBm</td>
+                            <td>At limit</td>
+                            <td>Use 6–10 dB attenuator</td>
+                        </tr>
+                        <tr>
+                            <td>&gt;+30 dBm</td>
+                            <td>Exceeds rating</td>
+                            <td><strong>Mandatory 10+ dB attenuator</strong> (damage risk)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+            
+            <section id="amplifier-measurement">
+                <h2>4. VNA Measurement for Active Amplifiers</h2>
+                
+                <h3>System Architecture</h3>
+                <div class="diagram">
+┌─────────────────────────────────────┐
+│    AMPLIFIER UNDER TEST             │
+│                                     │
+Port 1 ────→│ [Bias Tee 1] Amp [Bias Tee 2] │────→ Port 2
+(50Ω)       │       ↓               ↓       │  (50Ω)
+            │      VCC             VCC     │
+            │                             │
+            │ S11    S21    S22          │
+            │ S12    (gain) (out)        │
+            └─────────────────────────────────────┘
+                </div>
+                
+                <h3>Calibration Strategies</h3>
+                
+                <h4>Option 1: SOL at VNA Ports (Standard)</h4>
+                <p>Simple 50 Ω calibration at the VNA connectors, before bias tees. Fastest approach; bias tees remain in measurement.</p>
+                
+                <div class="success-box">
+                    <strong>Advantages:</strong>
+                    <ul>
+                        <li>Simple; uses standard 50 Ω calibration kit</li>
+                        <li>Bias tees are passive; included in measurement</li>
+                        <li>Fast calibration (~5 minutes)</li>
+                    </ul>
+                </div>
+                
+                <div class="warning-box">
+                    <strong>Disadvantages:</strong>
+                    <ul>
+                        <li>Bias tee parasitics remain in measurement</li>
+                        <li>If tees are lossy, dynamic range reduced</li>
+                    </ul>
+                </div>
+                
+                <h4>Option 2: TRL at Bias Tee Plane (Advanced)</h4>
+                <p>Thru-Reflect-Line calibration at bias tee output. More complex but best accuracy; automatically de-embeds bias tees.</p>
+                
+                <div class="success-box">
+                    <strong>Advantages:</strong>
+                    <ul>
+                        <li>De-embeds bias tee insertion loss & phase</li>
+                        <li>Impedance-agnostic (works even if not 50 Ω)</li>
+                        <li>Best accuracy for active devices</li>
+                    </ul>
+                </div>
+                
+                <h3>Measurement Procedure</h3>
+                <ol>
+                    <li><strong>Calibrate VNA:</strong> SOL (quick) or TRL (better)</li>
+                    <li><strong>Apply DC Bias:</strong> Set VCC, gate/collector bias; monitor with DMM</li>
+                    <li><strong>Verify Stability:</strong> Check with spectrum analyzer; look for oscillation</li>
+                    <li><strong>Sweep Frequency:</strong> Typically 100 MHz to 40–50 GHz</li>
+                    <li><strong>Capture All S-Parameters:</strong> S₁₁, S₁₂, S₂₁, S₂₂</li>
+                    <li><strong>Export Touchstone (.s2p):</strong> Document bias point and conditions</li>
+                </ol>
+                
+                <h3>De-embedding: Moving Reference Planes</h3>
+                
+                <h4>Port Extension Method (Simplest)</h4>
+                <p>Removes matched transmission line effect from measurement plane to DUT terminals.</p>
+                <div class="formula">
+                    τ = L / v<sub>p</sub>
+                </div>
+                <p>where L = physical length, v<sub>p</sub> = phase velocity (~0.6c on PCB)</p>
+                
+                <h4>Fixture De-embedding (Advanced)</h4>
+                <ol>
+                    <li>Measure fixture alone → S_fixture</li>
+                    <li>Measure fixture + DUT → S_total</li>
+                    <li>Remove cascade using ABCD algebra → S_DUT</li>
+                </ol>
+                
+                <h3>Impedance Extraction from S-Parameters</h3>
+                <div class="formula">
+                    Z<sub>in</sub> = Z₀ × (1 + S₁₁) / (1 − S₁₁) = 50 Ω × (1 + S₁₁) / (1 − S₁₁)
+                </div>
+                
+                <div class="formula">
+                    Z<sub>out</sub> = Z₀ × (1 + S₂₂) / (1 − S₂₂)
+                </div>
+                
+                <h3>Gain & Stability Analysis</h3>
+                <div class="formula">
+                    G = 20 × log₁₀(|S₂₁|) dB
+                </div>
+                
+                <div class="formula">
+                    K = (1 + |Δ|² − |S₁₁|² − |S₂₂|²) / (2 × |S₁₂ × S₂₁|)
+                </div>
+                
+                <p><strong>K > 1:</strong> Unconditionally stable | <strong>K < 1:</strong> Potentially unstable</p>
+            </section>
+            
+            <section id="bias-tees">
+                <h2>5. Bias Tees & Conical Coils</h2>
+                
+                <h3>What is a Bias Tee?</h3>
+                <div class="diagram">
+        │ VCC (DC)
+        │
+        R (10-100Ω)
+        │
+   ┌────┴────┬─────→ RF_in/RF_out
+   │         │
+  [L]      [C_block]
+  (RF)     (AC coupling)
+   │         │
+   └────┬────┘
+        │
+       GND
+                </div>
+                
+                <p><strong>Function:</strong></p>
+                <ul>
+                    <li><strong>Capacitor:</strong> Blocks DC from RF path; passes AC</li>
+                    <li><strong>Inductor:</strong> Blocks RF from DC supply; passes DC</li>
+                </ul>
+                
+                <h3>Conical Coil Design</h3>
+                <p>A conical spiral (tapered diameter) avoids sharp resonances by distributing capacitance and inductance across frequency:</p>
+                
+                <div class="diagram">
+       Tip (small diameter)
+          ▲
+         ╱│╲
+        ╱ │ ╲  ← High freq: small turns (low inductance)
+       ╱  │  ╲
+      ╱   │   ╲
+     ╱    │    ╲
+    ╱     │     ╲
+   Base (large diameter)
+   ↑
+   Low freq: large turns (high inductance)
+                </div>
+                
+                <h3>Commercial Conical Products</h3>
+                
+                <h4>Coilcraft 4310LC Series (DC–6 GHz)</h4>
+                <table>
+                    <tr>
+                        <td><strong>Frequency:</strong></td>
+                        <td>DC–6 GHz</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Inductance:</strong></td>
+                        <td>3.3 µH to 220 µH</td>
+                    </tr>
+                    <tr>
+                        <td><strong>DCR:</strong></td>
+                        <td>0.04–0.3 Ω</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Current:</strong></td>
+                        <td>0.6–10 A RMS</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Insertion Loss:</strong></td>
+                        <td>&lt;0.5 dB @ 1 GHz, ~2–3 dB @ 6 GHz</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cost:</strong></td>
+                        <td>~$3</td>
+                    </tr>
+                </table>
+                <div class="source-link">
+                    <a href="https://www.coilcraft.com/en-us/products/rf/conical-broadband/0-6-ghz/4310lc/" target="_blank">Coilcraft 4310LC Product Page</a>
+                </div>
+                
+                <h4>Coilcraft BCR Series (DC–40 GHz) – Ultra-Wideband</h4>
+                <table>
+                    <tr>
+                        <td><strong>Frequency:</strong></td>
+                        <td>10 MHz–40 GHz</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Inductance:</strong></td>
+                        <td>1.6 nH to 820 nH</td>
+                    </tr>
+                    <tr>
+                        <td><strong>DCR:</strong></td>
+                        <td>0.01–0.1 Ω</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Insertion Loss:</strong></td>
+                        <td>&lt;0.5 dB @ 100 MHz, &lt;1.0 dB @ 10 GHz, &lt;2 dB @ 35 GHz</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cost:</strong></td>
+                        <td>~$8–15</td>
+                    </tr>
+                </table>
+                <div class="source-link">
+                    <a href="https://www.coilcraft.com/en-us/products/rf/conical-broadband/0-40-ghz/bcr/" target="_blank">Coilcraft BCR Series Product Page</a>
+                </div>
+                
+                <h3>Key References</h3>
+                <div class="source-link">
+                    <a href="https://www.coilcraft.com/en-us/resources/application-notes/broadband-chokes-for-bias-tee-applications/" target="_blank">Coilcraft: Broadband Chokes for Bias Tee Applications</a>
+                </div>
+                <div class="source-link">
+                    <a href="https://www.coilcraft.com/en-us/edu/series/what-is-a-conical-inductor/" target="_blank">Coilcraft: What is a Conical Inductor?</a>
+                </div>
+                <div class="source-link">
+                    <a href="https://www.edn.com/a-look-at-conical-inductors/" target="_blank">EDN: A Look at Conical Inductors</a>
+                </div>
+            </section>
+            
+            <section id="attenuators">
+                <h2>6. Output Attenuators & VNA Protection</h2>
+                
+                <h3>Why Output Attenuators Are Critical</h3>
+                <div class="warning-box">
+                    <strong>VNA Receiver Maximum Input Power:</strong>
+                    <ul>
+                        <li>Keysight N5230C: +30 dBm</li>
+                        <li>Rohde & Schwarz ZNA: +25 dBm</li>
+                    </ul>
+                    <strong>Exceeding this limit → burns out low-noise input stage (permanent damage)</strong>
+                </div>
+                
+                <h3>Calculation Example</h3>
+                <div class="success-box">
+                    <strong>Safe Scenario:</strong>
+                    <ul>
+                        <li>Amplifier gain: +30 dB</li>
+                        <li>VNA Port 1 output: +5 dBm</li>
+                        <li>Amplifier output: 5 + 30 = <span class="highlight">+35 dBm</span> (exceeds limit)</li>
+                        <li><strong>Solution:</strong> Add 10 dB pad → −5 dBm to VNA ✓ Safe</li>
+                    </ul>
+                </div>
+                
+                <h3>Attenuator Selection Table</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Amp Gain</th>
+                            <th>Input Power</th>
+                            <th>Amp Output</th>
+                            <th>Attenuator</th>
+                            <th>Final to VNA</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>+15 dB</td>
+                            <td>−5 dBm</td>
+                            <td>+10 dBm</td>
+                            <td>None</td>
+                            <td>+10 dBm</td>
+                            <td>✓ Safe</td>
+                        </tr>
+                        <tr>
+                            <td>+25 dB</td>
+                            <td>+0 dBm</td>
+                            <td>+25 dBm</td>
+                            <td>6 dB</td>
+                            <td>+19 dBm</td>
+                            <td>✓ Safe</td>
+                        </tr>
+                        <tr>
+                            <td>+30 dB</td>
+                            <td>+5 dBm</td>
+                            <td>+35 dBm</td>
+                            <td>10 dB</td>
+                            <td>+25 dBm</td>
+                            <td>✓ Safe</td>
+                        </tr>
+                        <tr>
+                            <td>+40 dB</td>
+                            <td>+0 dBm</td>
+                            <td>+40 dBm</td>
+                            <td>20 dB</td>
+                            <td>+20 dBm</td>
+                            <td>✓ Safe</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>De-embedding the Attenuator</h3>
+                <p>The attenuator is now part of your measured S-parameters. You can either:</p>
+                <ul>
+                    <li><strong>Option A:</strong> Report the cascade ("S-parameters measured with 10 dB output pad")</li>
+                    <li><strong>Option B:</strong> De-embed the attenuator using cascade removal (ABCD matrix inversion)</li>
+                </ul>
+            </section>
+            
+            <section id="tia-measurement">
+                <h2>7. TIA Measurements with VNA</h2>
+                
+                <h3>Challenge: High-Impedance Input</h3>
+                <p><strong>Transimpedance Amplifier (TIA):</strong> Converts input current to output voltage</p>
+                <ul>
+                    <li>Input impedance: 25–100 Ω (typically set by feedback resistor)</li>
+                    <li>BUT: Without photodiode, input appears complex (capacitive)</li>
+                    <li>VNA is 50 Ω system → potential impedance mismatch</li>
+                </ul>
+                
+                <h3>Methodology 1: Direct S→Z Conversion ✓ Most Common</h3>
+                <div class="diagram">
+VNA Port 1 ──[DC block]──→ TIA input
+                          ↓
+                       [Bias tee]
+                          ↓
+VNA Port 2 ←───────── TIA output
+                </div>
+                
+                <p><strong>Procedure:</strong></p>
+                <ol>
+                    <li>Calibrate VNA at 50 Ω (SOL)</li>
+                    <li>Apply DC bias (~1 mA typical for op-amp TIA)</li>
+                    <li>Measure S-parameters (−30 to −40 dBm input power, 100 kHz–10 GHz)</li>
+                    <li>Convert S → Z using matrix transformation</li>
+                    <li>Extract Z₂₁ (transimpedance gain in Ohms)</li>
+                </ol>
+                
+                <div class="formula">
+                    Z₂₁ = Z₀ × 2S₂₁ / ((1−S₁₁)(1−S₂₂) − S₁₂S₂₁)
+                </div>
+                
+                <div class="formula">
+                    Z₂₁(dBΩ) = 20 × log₁₀(|Z₂₁|)
+                </div>
+                
+                <h3>Methodology 2: Impedance Matching Network</h3>
+                <p>For very high source impedance (>1 MΩ photodiode):</p>
+                <div class="diagram">
+Photodiode ──[L: 50-200nH]──[Transformer 16:1]──→ TIA (50Ω)
+(high Z, µA)   (series)        (impedance ratio)   (low Z)
+                </div>
+                
+                <h3>Methodology 3: Transmission Line Matching</h3>
+                <p>PCB traces between photodiode and TIA matched to TIA input impedance (±50%):</p>
+                <ul>
+                    <li>TIA Z₁ = 100 Ω → trace impedance 50–150 Ω</li>
+                    <li>Minimizes reflections at Gbps data rates</li>
+                    <li>Integrated design approach</li>
+                </ul>
+                
+                <h3>Critical Factor: Photodiode Capacitance</h3>
+                <div class="formula">
+                    f₋₃dB ≈ g<sub>m</sub> / (2π × (C<sub>PD</sub> + C<sub>opamp</sub>))
+                </div>
+                
+                <div class="warning-box">
+                    <strong>Key Insight:</strong> When measuring TIA without photodiode, bandwidth is artificially high. Add 10–100 pF capacitor to simulate real photodiode for accurate results.
+                </div>
+                
+                <h3>Typical TIA Gains</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feedback R_f</th>
+                            <th>Z_T Magnitude</th>
+                            <th>Z_T (dBΩ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1 kΩ</td>
+                            <td>1000 Ω</td>
+                            <td>60 dBΩ</td>
+                        </tr>
+                        <tr>
+                            <td>5 kΩ</td>
+                            <td>5000 Ω</td>
+                            <td>74 dBΩ</td>
+                        </tr>
+                        <tr>
+                            <td>10 kΩ</td>
+                            <td>10000 Ω</td>
+                            <td>80 dBΩ</td>
+                        </tr>
+                        <tr>
+                            <td>100 kΩ</td>
+                            <td>100000 Ω</td>
+                            <td>100 dBΩ</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+            
+            <section id="examples">
+                <h2>8. Practical Examples & Literature</h2>
+                
+                <h3>Example 1: 10 Gbps Optical TIA (Microwave Journal, 2012)</h3>
+                <div class="info-box">
+                    <p><strong>Reference:</strong> "Fast Calculation of Transimpedance Gain and Equivalent Input Noise Current Density for High-speed Optical Preamplifier Design"</p>
+                    <ul>
+                        <li>Feedback resistance: 5 kΩ (variable)</li>
+                        <li>Frequency range: 100 kHz–10 GHz (VNA measurement)</li>
+                        <li>Peak Z₂₁: ~80 dBΩ (5000 Ω)</li>
+                        <li><strong>Photodiode capacitance dependency:</strong>
+                            <ul>
+                                <li>C_PD = 0.1 pF → BW ≈ 14 GHz</li>
+                                <li>C_PD = 0.6 pF → BW ≈ 8 GHz (10 Gbps limit)</li>
+                                <li>C_PD > 1 pF → BW < 5 GHz (unsuitable)</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="source-link">
+                    <a href="https://www.microwavejournal.com/articles/11113-fast-calculation-of-transimpedance-gain-and-equivalent-input-noise-current-density-for-high-speed-optical-preamplifier-design" target="_blank">Microwave Journal: Fast Calculation of Transimpedance Gain</a>
+                </div>
+                
+                <h3>Example 2: 133 GHz InP DHBT TIA (UCL, 2018)</h3>
+                <div class="info-box">
+                    <p><strong>Reference:</strong> "Transimpedance Amplifiers with 133 GHz bandwidth on 130nm InP DHBT"</p>
+                    <ul>
+                        <li>Measurement: On-wafer with Cascade Infinity 67 GHz GSG probes</li>
+                        <li>Input impedance (Z₁₁): 25–35 Ω (well-matched)</li>
+                        <li>Transimpedance gain (Z₂₁): 42 dBΩ across 0–133 GHz</li>
+                        <li>Data rate tested: 64 Gbps eye diagrams</li>
+                        <li><strong>Significance:</strong> Highest bandwidth TIA at publication</li>
+                    </ul>
+                </div>
+                
+                <div class="source-link">
+                    <a href="https://discovery.ucl.ac.uk/id/eprint/10087499/" target="_blank">UCL Discovery: 133 GHz Bandwidth TIAs</a>
+                </div>
+                
+                <h3>Example 3: OPA818 TIA Testing (TI E2E Forum, 2021)</h3>
+                <div class="warning-box">
+                    <p><strong>Problem:</strong> Measured gain lower than expected (74 dBΩ) without photodiode attached</p>
+                    <p><strong>Root Cause:</strong> Unmeasured input capacitance (op-amp parasitic + PCB)</p>
+                    <p><strong>Solution:</strong> Added 33 pF capacitor in parallel with feedback resistor to simulate photodiode; gain then matched predictions</p>
+                    <p><strong>Lesson:</strong> Always simulate input capacitance when measuring TIA without photodiode.</p>
+                </div>
+                
+                <div class="source-link">
+                    <a href="https://e2e.ti.com/support/amplifiers-group/amplifiers/f/amplifiers-forum/1064582/opa818-testing-tia-with-vna" target="_blank">TI E2E Forum: OPA818 TIA VNA Testing</a>
+                </div>
+            </section>
+            
+            <section id="sources">
+                <h2>9. Source Links & References</h2>
+                
+                <h3>Bias Tee & Conical Coil Resources</h3>
+                <div class="source-link">
+                    <strong>1. Coilcraft 4310LC Series</strong><br>
+                    <a href="https://www.coilcraft.com/en-us/products/rf/conical-broadband/0-6-ghz/4310lc/" target="_blank">Product Page</a> | 
+                    <a href="https://www.coilcraft.com/en-us/resources/application-notes/broadband-chokes-for-bias-tee-applications/" target="_blank">Application Note</a>
+                </div>
+                
+                <div class="source-link">
+                    <strong>2. Coilcraft BCR Series</strong><br>
+                    <a href="https://www.coilcraft.com/en-us/products/rf/conical-broadband/0-40-ghz/bcr/" target="_blank">Product Page</a>
+                </div>
+                
+                <div class="source-link">
+                    <strong>3. Coilcraft: What is a Conical Inductor?</strong><br>
+                    <a href="https://www.coilcraft.com/en-us/edu/series/what-is-a-conical-inductor/" target="_blank">Educational Article</a>
+                </div>
+                
+                <div class="source-link">
+                    <strong>4. Analog Devices AN-2061</strong><br>
+                    <a href="https://www.analog.com/en/resources/app-notes/an-2061.html" target="_blank">Wideband Bias Tee Design Using 0402 SMD Components</a>
+                </div>
+                
+                <div class="source-link">
+                    <strong>5. EDN: A Look at Conical Inductors</strong><br>
+                    <a href="https://www.edn.com/a-look-at-conical-inductors/" target="_blank">Design Principles Article</a>
+                </div>
+                
+                <div class="source-link">
+                    <strong>6. In Compliance Magazine: Bias Tee for Broadband Power Measurement</strong><br>
+                    <a href="https://incompliancemag.com/a-bias-tee-for-broadband-measurement-of-power-electronic-components/" target="_blank">Application Note</a>
+                </div>
+                
+                <h3>TIA Measurement Resources</h3>
+                
+                <div class="source-link">
+                    <strong>7. Microwave Journal: Fast Calculation of Transimpedance Gain</strong><br>
+                    <a href="https://www.microwavejournal.com/articles/11113-fast-calculation-of-transimpedance-gain-and-equivalent-input-noise-current-density-for-high-speed-optical-preamplifier-design" target="_blank">2012 Article with S→Z Conversion Formulas</a>
+                </div>
+                
+                <div class="source-link">
+                    <strong>8. UCL Discovery: 133 GHz TIAs on InP</strong><br>
+                    <a href="https://discovery.ucl.ac.uk/id/eprint/10087499/" target="_blank">High-Frequency On-Wafer Measurement Example</a>
+                </div>
+                
+                <div class="source-link">
+                    <strong>9. TI E2E Forum: OPA818 Testing with VNA</strong><br>
+                    <a href="https://e2e.ti.com/support/amplifiers-group/amplifiers/f/amplifiers-forum/1064582/opa818-testing-tia-with-vna" target="_blank">Practical Troubleshooting (2021)</a>
+                </div>
+                
+                <div class="source-link">
+                    <strong>10. RF Essentials: Bias Tee Selection</strong><br>
+                    <a href="https://rfessentials.com/rf-knowledge-base/how-do-i-select-a-bias-tee-for-injecting-dc-power-onto-an-rf-line-without-affect/" target="_blank">Design Equations & Component Selection</a>
+                </div>
+                
+                <h3>Patents (Impedance Matching & TIA Design)</h3>
+                
+                <div class="source-link">
+                    <strong>11. US Patent 5179461: Broadband Optical Receiver</strong><br>
+                    <a href="https://image-ppubs.julius.com/dirsearch-public/print/downloadPdf/5179461" target="_blank">Transformer + Series Inductor Impedance Matching</a>
+                </div>
+                
+                <div class="source-link">
+                    <strong>12. US Patent 9354411: Remote Photodiode ROA</strong><br>
+                    <a href="https://image-ppubs.julius.com/dirsearch-public/print/downloadPdf/9354411" target="_blank">PCB Transmission Line Impedance Matching</a>
+                </div>
+                
+                <div class="source-link">
+                    <strong>13. US Patent 9148960: Impedance-Matched TIA Architecture</strong><br>
+                    <a href="https://image-ppubs.julius.com/dirsearch-public/print/downloadPdf/9148960" target="_blank">5–10 Gbps Receiver Design</a>
+                </div>
+                
+                <h3>Tools & Software</h3>
+                
+                <div class="source-link">
+                    <strong>14. scikit-rf Python Library</strong><br>
+                    <a href="https://scikit-rf.readthedocs.io/" target="_blank">S/Z-Parameter Conversion & Analysis</a>
+                </div>
+                
+                <div class="source-link">
+                    <strong>15. Coilcraft Online Design Tools</strong><br>
+                    <a href="https://www.coilcraft.com/en-us/designers/" target="_blank">Bias Tee & Inductor Selection Calculators</a>
+                </div>
+            </section>
+            
+            <section>
+                <h2>Summary: Key Takeaways</h2>
+                
+                <div class="success-box">
+                    <ol>
+                        <li><strong>dBm conversions matter:</strong> Know the power at each stage</li>
+                        <li><strong>Bias tees are critical:</strong> Use 4310LC for DC–6 GHz, BCR for broadband to 40 GHz</li>
+                        <li><strong>Output attenuators protect VNA:</strong> Keep receiver input <+20 dBm</li>
+                        <li><strong>De-embedding is optional but useful:</strong> Extract device-only specs post-measurement</li>
+                        <li><strong>TIA measurements require S→Z conversion:</strong> Direct measurement, convert to Z-parameters</li>
+                        <li><strong>Photodiode capacitance dominates TIA bandwidth:</strong> Simulate with realistic input capacitance (~0.6–1 pF)</li>
+                        <li><strong>Stability first:</strong> Check for oscillation before connecting to VNA</li>
+                        <li><strong>Calibration with bias tees in-place:</strong> TRL calibration is cleanest approach</li>
+                    </ol>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Comprehensive VNA Measurement Guide | Complete Reference with Source Links</p>
+            <p>Last Updated: 2026 | Based on industry standards, patents, and peer-reviewed research</p>
+        </footer>
+    </div>
+    
+    <button class="back-to-top" onclick="scrollToTop()">↑ Top</button>
+    
+    <script>
+        // Back-to-top button functionality
+        window.addEventListener('scroll', function() {
+            const btn = document.querySelector('.back-to-top');
+            if (window.pageYOffset > 300) {
+                btn.classList.add('show');
+            } else {
+                btn.classList.remove('show');
+            }
+        });
+        
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
